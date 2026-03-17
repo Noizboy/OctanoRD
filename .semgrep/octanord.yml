@@ -1,0 +1,127 @@
+rules:
+  # ─── Privacidad: datos sensibles en logs ───────────────────────────────────
+
+  - id: no-phone-in-logs
+    message: "Posible numero de telefono en log. Usar phoneHash en su lugar."
+    severity: ERROR
+    languages: [typescript]
+    patterns:
+      - pattern-either:
+          - pattern: console.log($A, $PHONE, $B)
+          - pattern: this.logger.log($A, $PHONE, $B)
+          - pattern: this.logger.debug($A, $PHONE, $B)
+      - metavariable-regex:
+          metavariable: $PHONE
+          regex: ".*(phone|telefono|numero|number).*"
+
+  - id: no-raw-token-in-response
+    message: "Posible token o secret en respuesta HTTP. Asegurarse de no filtrar JWT_SECRET ni claves privadas."
+    severity: ERROR
+    languages: [typescript]
+    pattern-either:
+      - pattern: res.json({ ..., secret: $VAL, ... })
+      - pattern: res.json({ ..., password: $VAL, ... })
+      - pattern: res.json({ ..., jwt_secret: $VAL, ... })
+
+  # ─── Seguridad: SQL / NoSQL injection ──────────────────────────────────────
+
+  - id: raw-sql-interpolation
+    message: "Query SQL con interpolacion directa de variable. Usar parametros de Drizzle (sql`...${param}...` con placeholder o .where(eq(...)))."
+    severity: ERROR
+    languages: [typescript]
+    pattern: db.execute(`...${"..."}...`)
+
+  - id: dangerous-template-sql
+    message: "Template literal en query SQL con variable externa. Riesgo de SQL injection."
+    severity: ERROR
+    languages: [typescript]
+    patterns:
+      - pattern: $DB.execute(`$QUERY`)
+      - metavariable-regex:
+          metavariable: $QUERY
+          regex: ".*\\$\\{.*\\}.*"
+
+  # ─── Auth: endpoints sin proteccion ────────────────────────────────────────
+
+  - id: post-endpoint-no-guard
+    message: "Endpoint @Post sin @UseGuards. Verificar si requiere JWT o Turnstile guard."
+    severity: WARNING
+    languages: [typescript]
+    patterns:
+      - pattern: |
+          @Post(...)
+          async $METHOD(...) {
+            ...
+          }
+      - pattern-not: |
+          @UseGuards(...)
+          @Post(...)
+          async $METHOD(...) {
+            ...
+          }
+
+  - id: patch-endpoint-no-guard
+    message: "Endpoint @Patch sin @UseGuards. Verificar si requiere autenticacion."
+    severity: WARNING
+    languages: [typescript]
+    patterns:
+      - pattern: |
+          @Patch(...)
+          async $METHOD(...) {
+            ...
+          }
+      - pattern-not: |
+          @UseGuards(...)
+          @Patch(...)
+          async $METHOD(...) {
+            ...
+          }
+
+  - id: delete-endpoint-no-guard
+    message: "Endpoint @Delete sin @UseGuards."
+    severity: WARNING
+    languages: [typescript]
+    patterns:
+      - pattern: |
+          @Delete(...)
+          async $METHOD(...) {
+            ...
+          }
+      - pattern-not: |
+          @UseGuards(...)
+          @Delete(...)
+          async $METHOD(...) {
+            ...
+          }
+
+  # ─── Storage: path traversal en uploads ────────────────────────────────────
+
+  - id: minio-path-traversal
+    message: "Path de MinIO construido con input del usuario. Sanitizar con path.basename() o UUID antes de usar como object key."
+    severity: ERROR
+    languages: [typescript]
+    patterns:
+      - pattern: $CLIENT.putObject($BUCKET, $PATH, ...)
+      - metavariable-regex:
+          metavariable: $PATH
+          regex: ".*req\\..*|.*body\\..*|.*params\\..*|.*query\\..*"
+
+  # ─── Secretos hardcodeados ──────────────────────────────────────────────────
+
+  - id: hardcoded-jwt-secret
+    message: "JWT secret hardcodeado en el codigo. Usar process.env.JWT_SECRET."
+    severity: ERROR
+    languages: [typescript]
+    pattern-either:
+      - pattern: jwt.sign($P, "...")
+      - pattern: jwt.verify($T, "...")
+      - pattern: JwtModule.register({ secret: "...", ... })
+
+  - id: hardcoded-api-key
+    message: "Posible API key hardcodeada. Usar variables de entorno."
+    severity: WARNING
+    languages: [typescript]
+    pattern-either:
+      - pattern: apiKey = "AIza$..."
+      - pattern: TWILIO_AUTH_TOKEN = "..."
+      - pattern: authorization = "Bearer ..."
