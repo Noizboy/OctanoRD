@@ -1,16 +1,10 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, ActivityIndicator } from 'react-native'
-import { useQuery } from '@tanstack/react-query'
 import { Ionicons } from '@expo/vector-icons'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { getDeviceFingerprint } from '@/lib/utils/fingerprint'
+import { useMyReviews } from '@/lib/queries/useMyReviews'
 import ReviewCard from '@/components/review/ReviewCard'
-import type { Review } from '@/lib/queries/types'
-
-// Local type that extends Review with station info
-interface ReviewWithStation extends Review {
-  stationName?: string
-}
 
 export default function MyReviewsScreen() {
   const { phoneHash } = useAuthStore()
@@ -20,26 +14,12 @@ export default function MyReviewsScreen() {
     getDeviceFingerprint().then(setDeviceHash)
   }, [])
 
-  const { data: reviews = [], isLoading } = useQuery<ReviewWithStation[]>({
-    queryKey: ['reviews', 'my', phoneHash, deviceHash],
-    queryFn: async () => {
-      // In production you'd have a dedicated endpoint; here we use device/phone filter
-      // For now return empty - this endpoint would need to be implemented on the API
-      return []
-    },
-    enabled: !!(phoneHash || deviceHash),
-  })
+  const { data: reviews = [], isLoading } = useMyReviews(deviceHash, phoneHash)
 
-  if (!phoneHash && !deviceHash) {
+  if (!deviceHash) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 px-6">
-        <Ionicons name="star-outline" size={56} color="#9ca3af" />
-        <Text className="text-lg font-semibold text-gray-700 mt-4">
-          Tus Calificaciones
-        </Text>
-        <Text className="text-sm text-gray-500 text-center mt-2">
-          Califica una gasolinera para ver tu historial aqui.
-        </Text>
+      <View className="flex-1 items-center justify-center bg-gray-50">
+        <ActivityIndicator size="large" color="#1e40af" />
       </View>
     )
   }
@@ -56,15 +36,20 @@ export default function MyReviewsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ReviewCard review={item} />}
           ListHeaderComponent={
-            <Text className="px-4 py-3 text-sm text-gray-500">
-              {reviews.length} {reviews.length === 1 ? 'calificacion' : 'calificaciones'}
-            </Text>
+            reviews.length > 0 ? (
+              <Text className="px-4 py-3 text-sm text-gray-500">
+                {reviews.length} {reviews.length === 1 ? 'calificacion' : 'calificaciones'}
+              </Text>
+            ) : null
           }
           ListEmptyComponent={
-            <View className="items-center py-20">
-              <Ionicons name="star-outline" size={48} color="#9ca3af" />
-              <Text className="text-gray-400 mt-4">
+            <View className="items-center py-20 px-6">
+              <Ionicons name="star-outline" size={56} color="#9ca3af" />
+              <Text className="text-lg font-semibold text-gray-700 mt-4 text-center">
                 Aun no has calificado ninguna gasolinera
+              </Text>
+              <Text className="text-sm text-gray-400 text-center mt-2">
+                Tus calificaciones apareceran aqui
               </Text>
             </View>
           }

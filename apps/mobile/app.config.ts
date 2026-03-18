@@ -50,12 +50,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {
     bundler: 'metro',
-    output: 'static',
     favicon: './assets/favicon.png',
   },
   plugins: [
     'expo-router',
     'expo-secure-store',
+    [
+      'react-native-maps',
+      {
+        androidApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+        iosApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+      },
+    ],
     [
       'expo-location',
       {
@@ -82,8 +88,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000',
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? 'http://localhost:3000',
-    eas: {
-      projectId: 'your-eas-project-id',
-    },
   },
 })

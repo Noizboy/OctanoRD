@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { View, Alert, ActivityIndicator } from 'react-native'
-import MapView, { Marker, type Region } from 'react-native-maps'
+import { View, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'
+import MapView, { Marker, PROVIDER_GOOGLE, type Region } from 'react-native-maps'
 import * as Location from 'expo-location'
+import { Ionicons } from '@expo/vector-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import { useNearbyStations } from '@/lib/queries/useNearbyStations'
 import { useMapStore } from '@/lib/stores/mapStore'
+import { onRatingUpdated } from '@/lib/socket'
 import StationMarker from '@/components/map/StationMarker'
 import StationCard from '@/components/map/StationCard'
 import MapFilters from '@/components/map/MapFilters'
@@ -14,9 +17,41 @@ export default function MapScreen() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedStation, setSelectedStation] = useState<GasStation | null>(null)
   const [showFilters, setShowFilters] = useState(false)
-  const { setViewport } = useMapStore()
+  const { setViewport, filters } = useMapStore()
+  const queryClient = useQueryClient()
 
   const { data: stations = [], isLoading } = useNearbyStations(coords)
+
+  // Subscribe to real-time rating updates
+  useEffect(() => {
+    const unsubscribe = onRatingUpdated((data) => {
+      // Update the specific station in all nearby queries
+      queryClient.setQueriesData<GasStation[]>(
+        { queryKey: ['stations', 'nearby'] },
+        (old) =>
+          old?.map((s) =>
+            s.id === data.stationId
+              ? { ...s, avgRating: String(data.avgRating), reviewCount: data.reviewCount }
+              : s,
+          ),
+      )
+      // Also update individual station cache
+      queryClient.setQueryData<GasStation>(
+        ['station', data.stationId],
+        (old) =>
+          old
+            ? { ...old, avgRating: String(data.avgRating), reviewCount: data.reviewCount }
+            : old,
+      )
+      // Update selected station card if it's the one updated
+      setSelectedStation((prev) =>
+        prev?.id === data.stationId
+          ? { ...prev, avgRating: String(data.avgRating), reviewCount: data.reviewCount }
+          : prev,
+      )
+    })
+    return unsubscribe
+  }, [queryClient])
 
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null
@@ -66,11 +101,15 @@ export default function MapScreen() {
     [setViewport],
   )
 
+  const activeFilterCount =
+    filters.brands.length + (filters.minRating > 0 ? 1 : 0)
+
   return (
     <View className="flex-1">
       <MapView
         ref={mapRef}
-        className="flex-1"
+        provider={PROVIDER_GOOGLE}
+        style={{ flex: 1 }}
         initialRegion={{
           latitude: 18.4861,
           longitude: -69.9312,
@@ -89,6 +128,21 @@ export default function MapScreen() {
           />
         ))}
       </MapView>
+
+      {/* Filter button */}
+      <TouchableOpacity
+        className="absolute top-4 right-4 bg-white rounded-full p-3 shadow"
+        onPress={() => setShowFilters(true)}
+      >
+        <View className="relative">
+          <Ionicons name="options-outline" size={22} color="#1e40af" />
+          {activeFilterCount > 0 && (
+            <View className="absolute -top-1 -right-1 w-4 h-4 bg-blue-700 rounded-full items-center justify-center">
+              <Ionicons name="ellipse" size={8} color="#fff" />
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
 
       {isLoading && (
         <View className="absolute top-4 self-center bg-white rounded-full px-4 py-2 shadow">

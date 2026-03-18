@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { useMutation } from '@tanstack/react-query'
 import { Ionicons } from '@expo/vector-icons'
 import api from '@/lib/api'
+import { useReviewDraftStore } from '@/lib/stores/reviewDraftStore'
 
 interface UploadResponse {
   path: string
@@ -21,8 +22,9 @@ interface UploadResponse {
 
 export default function UploadReceiptScreen() {
   const router = useRouter()
+  const { setReceiptUploadId } = useReviewDraftStore()
   const [imageUri, setImageUri] = useState<string | null>(null)
-  const [uploadedPath, setUploadedPath] = useState<string | null>(null)
+  const [uploadedId, setUploadedId] = useState<string | null>(null)
 
   const uploadMutation = useMutation({
     mutationFn: async (uri: string) => {
@@ -45,7 +47,7 @@ export default function UploadReceiptScreen() {
       return response.data
     },
     onSuccess: (data) => {
-      setUploadedPath(data.path)
+      setUploadedId(data.uploadId)
     },
     onError: () => {
       Alert.alert('Error', 'No se pudo subir la imagen. Intenta de nuevo.')
@@ -113,7 +115,7 @@ export default function UploadReceiptScreen() {
                 <Text className="text-white mt-2">Subiendo...</Text>
               </View>
             )}
-            {uploadedPath && !uploadMutation.isPending && (
+            {uploadedId && !uploadMutation.isPending && (
               <View className="absolute top-3 right-3 bg-green-500 rounded-full p-1.5">
                 <Ionicons name="checkmark" size={16} color="#fff" />
               </View>
@@ -165,21 +167,22 @@ export default function UploadReceiptScreen() {
         {/* Confirm */}
         <TouchableOpacity
           className={`py-4 rounded-xl items-center ${
-            uploadedPath ? 'bg-blue-700' : 'bg-gray-200'
+            uploadedId ? 'bg-blue-700' : 'bg-gray-200'
           }`}
           onPress={() => {
-            if (uploadedPath) {
+            if (uploadedId) {
+              setReceiptUploadId(uploadedId)
               router.back()
             }
           }}
-          disabled={!uploadedPath}
+          disabled={!uploadedId}
         >
           <Text
             className={`font-bold text-base ${
-              uploadedPath ? 'text-white' : 'text-gray-400'
+              uploadedId ? 'text-white' : 'text-gray-400'
             }`}
           >
-            {uploadedPath ? 'Confirmar factura' : 'Sube una imagen primero'}
+            {uploadedId ? 'Confirmar factura' : 'Sube una imagen primero'}
           </Text>
         </TouchableOpacity>
       </View>

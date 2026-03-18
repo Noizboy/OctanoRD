@@ -1,15 +1,19 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Param,
+  Query,
   UseGuards,
+  UseInterceptors,
   Request,
 } from '@nestjs/common'
 import { ReviewsService } from './reviews.service'
 import { CreateReviewDto } from './dto/create-review.dto'
 import { VoteReviewDto } from './dto/vote-review.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+import { FraudInterceptor } from '../../common/interceptors/fraud.interceptor'
 
 interface AuthRequest extends Request {
   user: { phoneHash: string }
@@ -19,8 +23,17 @@ interface AuthRequest extends Request {
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
+  @Get('mine')
+  findMine(
+    @Query('deviceHash') deviceHash: string,
+    @Query('phoneHash') phoneHash?: string,
+  ) {
+    return this.reviewsService.findMine(deviceHash, phoneHash)
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FraudInterceptor)
   create(@Body() dto: CreateReviewDto, @Request() req: AuthRequest) {
     return this.reviewsService.create(dto, req.user.phoneHash)
   }

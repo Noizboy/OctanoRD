@@ -2,7 +2,9 @@
   "name": "octanord",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev:api": "npm run start:dev --workspace=apps/api",
     "dev:mobile": "npm run start --workspace=apps/mobile",
@@ -12,5 +14,8 @@
     "db:generate": "npm run db:generate --workspace=apps/api",
     "db:migrate": "npm run db:migrate --workspace=apps/api",
     "db:studio": "npm run db:studio --workspace=apps/api"
+  },
+  "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0"
   }
 }

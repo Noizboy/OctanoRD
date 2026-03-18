@@ -8,9 +8,10 @@ import {
   Linking,
 } from 'react-native'
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Ionicons } from '@expo/vector-icons'
 import api from '@/lib/api'
+import { onRatingUpdated } from '@/lib/socket'
 import { getRatingColor, RATING_COLORS } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
 import ReviewCard from '@/components/review/ReviewCard'
@@ -21,6 +22,7 @@ export default function StationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const navigation = useNavigation()
+  const queryClient = useQueryClient()
 
   const { data: station, isLoading } = useQuery<GasStation>({
     queryKey: ['station', id],
@@ -39,6 +41,20 @@ export default function StationDetailScreen() {
       navigation.setOptions({ title: station.name })
     }
   }, [station, navigation])
+
+  // Subscribe to real-time rating updates for this station
+  useEffect(() => {
+    if (!id) return
+    const unsubscribe = onRatingUpdated((data) => {
+      if (data.stationId !== id) return
+      queryClient.setQueryData<GasStation>(['station', id], (old) =>
+        old
+          ? { ...old, avgRating: String(data.avgRating), reviewCount: data.reviewCount }
+          : old,
+      )
+    })
+    return unsubscribe
+  }, [id, queryClient])
 
   if (isLoading) {
     return (

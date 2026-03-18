@@ -12,8 +12,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Ionicons } from '@expo/vector-icons'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { useSubmitReview } from '@/lib/queries/useSubmitReview'
+import { useReviewDraftStore } from '@/lib/stores/reviewDraftStore'
 import { getDeviceFingerprint } from '@/lib/utils/fingerprint'
 import { FUEL_TYPES } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
@@ -31,6 +33,7 @@ export default function NewReviewScreen() {
   const router = useRouter()
   const { isVerified } = useAuthStore()
   const { mutateAsync, isPending } = useSubmitReview()
+  const { receiptUploadId, clearDraft } = useReviewDraftStore()
 
   const {
     control,
@@ -64,10 +67,12 @@ export default function NewReviewScreen() {
         stars: values.stars,
         fuelType: values.fuelType,
         comment: values.comment,
+        receiptUploadId: receiptUploadId ?? undefined,
         deviceHash,
         turnstileToken: 'dev-bypass',
       })
 
+      clearDraft()
       Alert.alert(
         'Gracias!',
         'Tu calificacion fue enviada y sera revisada pronto.',
@@ -165,17 +170,26 @@ export default function NewReviewScreen() {
           className="bg-white rounded-xl p-4 shadow-sm mb-6 flex-row items-center"
           onPress={() => router.push(`/review/upload-receipt?stationId=${stationId}`)}
         >
-          <View className="w-10 h-10 bg-blue-50 rounded-full items-center justify-center mr-3">
-            <Text className="text-xl">🧾</Text>
+          <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${receiptUploadId ? 'bg-green-50' : 'bg-blue-50'}`}>
+            {receiptUploadId ? (
+              <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+            ) : (
+              <Text className="text-xl">🧾</Text>
+            )}
           </View>
           <View className="flex-1">
             <Text className="text-sm font-medium text-gray-800">
-              Adjuntar factura (opcional)
+              {receiptUploadId ? 'Factura adjuntada' : 'Adjuntar factura (opcional)'}
             </Text>
             <Text className="text-xs text-gray-500 mt-0.5">
-              Las reviews con factura tienen mayor credibilidad
+              {receiptUploadId
+                ? 'Toca para cambiar la imagen'
+                : 'Las reviews con factura tienen mayor credibilidad'}
             </Text>
           </View>
+          {receiptUploadId && (
+            <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
+          )}
         </TouchableOpacity>
 
         {/* Submit */}

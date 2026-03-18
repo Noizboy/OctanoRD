@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client'
 
-const WS_URL = process.env.EXPO_PUBLIC_WS_URL ?? 'http://localhost:3000'
+const WS_URL = process.env.EXPO_PUBLIC_WS_URL ?? 'http://192.168.1.221:3000'
 
 interface RatingUpdatedEvent {
   stationId: string

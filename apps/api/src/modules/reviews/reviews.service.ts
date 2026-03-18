@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bull'
-import { eq, sql } from 'drizzle-orm'
+import { eq, or, sql, desc } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { DB_TOKEN } from '../../db/db.module'
 import { reviews, reviewVotes } from '../../db/schema'
@@ -131,6 +131,19 @@ export class ReviewsService {
       .returning()
 
     return { reported: true, status: updated?.status }
+  }
+
+  async findMine(deviceHash: string, phoneHash?: string) {
+    const conditions = phoneHash
+      ? or(eq(reviews.deviceHash, deviceHash), eq(reviews.phoneHash, phoneHash))
+      : eq(reviews.deviceHash, deviceHash)
+
+    return this.db
+      .select()
+      .from(reviews)
+      .where(conditions)
+      .orderBy(desc(reviews.createdAt))
+      .limit(50)
   }
 
   async updateAfterOcr(
