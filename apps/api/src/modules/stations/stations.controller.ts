@@ -7,6 +7,11 @@ import { SearchStationsDto } from './dto/search-stations.dto'
 export class StationsController {
   constructor(private readonly stationsService: StationsService) {}
 
+  @Get('all')
+  findAll() {
+    return this.stationsService.findAll()
+  }
+
   @Get('nearby')
   findNearby(@Query() dto: NearbyStationsDto) {
     return this.stationsService.findNearby(dto)

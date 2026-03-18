@@ -1,33 +1,40 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '../api'
-import { useMapStore } from '../stores/mapStore'
 import type { GasStation } from './types'
 
-interface NearbyParams {
-  lat: number
-  lng: number
+function mapStation(s: any): GasStation {
+  return {
+    id: s.id,
+    name: s.name,
+    brand: s.brand,
+    lat: s.lat,
+    lng: s.lng,
+    address: s.address,
+    municipality: s.municipality,
+    province: s.province,
+    phone: s.phone,
+    hours: s.hours,
+    services: s.services,
+    fuelTypes: s.fuel_types ?? s.fuelTypes,
+    avgRating: s.avg_rating ?? s.avgRating ?? '0',
+    reviewCount: s.review_count ?? s.reviewCount ?? 0,
+    verified: s.verified,
+    claimed: s.claimed,
+    osmId: s.osm_id ?? s.osmId,
+    createdAt: s.created_at ?? s.createdAt,
+    updatedAt: s.updated_at ?? s.updatedAt,
+    distance_meters: s.distance_meters,
+  }
 }
 
-export function useNearbyStations(coords: NearbyParams | null) {
-  const { filters } = useMapStore()
-
+export function useAllStations() {
   return useQuery<GasStation[]>({
-    queryKey: ['stations', 'nearby', coords, filters],
+    queryKey: ['stations', 'all'],
     queryFn: async () => {
-      if (!coords) return []
-      const params: Record<string, unknown> = {
-        lat: coords.lat,
-        lng: coords.lng,
-        radius: 10,
-      }
-      if (filters.minRating > 0) params.minRating = filters.minRating
-      if (filters.brands.length === 1) params.brand = filters.brands[0]
-
-      const response = await api.get<GasStation[]>('/stations/nearby', { params })
-      return response.data
+      const response = await api.get<any[]>('/stations/all')
+      return response.data.map(mapStation)
     },
-    enabled: !!coords,
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 }

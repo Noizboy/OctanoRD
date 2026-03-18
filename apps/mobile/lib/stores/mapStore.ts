@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 
 export interface MapFilters {
+  search: string
   brands: string[]
   minRating: number
-  fuelTypes: string[]
 }
 
 export interface MapViewport {
@@ -13,40 +13,27 @@ export interface MapViewport {
   longitudeDelta: number
 }
 
-interface MapState {
+interface MapStore {
   filters: MapFilters
   viewport: MapViewport | null
-}
-
-interface MapActions {
   setFilters: (filters: Partial<MapFilters>) => void
   setViewport: (viewport: MapViewport) => void
   resetFilters: () => void
 }
 
-type MapStore = MapState & MapActions
-
 const DEFAULT_FILTERS: MapFilters = {
+  search: '',
   brands: [],
   minRating: 0,
-  fuelTypes: [],
-}
-
-// Default to Santo Domingo, RD
-const DEFAULT_VIEWPORT: MapViewport = {
-  latitude: 18.4861,
-  longitude: -69.9312,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
 }
 
 export const useMapStore = create<MapStore>((set) => ({
   filters: DEFAULT_FILTERS,
-  viewport: DEFAULT_VIEWPORT,
+  viewport: null,
 
-  setFilters: (partialFilters) =>
+  setFilters: (partial) =>
     set((state) => ({
-      filters: { ...state.filters, ...partialFilters },
+      filters: { ...state.filters, ...partial },
     })),
 
   setViewport: (viewport) => set({ viewport }),

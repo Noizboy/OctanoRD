@@ -13,7 +13,6 @@ interface TabConfig {
 const tabs: TabConfig[] = [
   { name: 'index', title: 'Mapa', icon: 'map-outline', iconFocused: 'map' },
   { name: 'list', title: 'Lista', icon: 'list-outline', iconFocused: 'list' },
-  { name: 'search', title: 'Buscar', icon: 'search-outline', iconFocused: 'search' },
   {
     name: 'my-reviews',
     title: 'Mis Calificaciones',
@@ -40,6 +39,7 @@ export default function TabsLayout() {
           name={tab.name}
           options={{
             title: tab.title,
+            headerShown: tab.name !== 'index',
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={focused ? tab.iconFocused : tab.icon}
@@ -50,6 +50,8 @@ export default function TabsLayout() {
           }}
         />
       ))}
+      {/* Hide search tab from navbar but keep the route */}
+      <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
   )
 }

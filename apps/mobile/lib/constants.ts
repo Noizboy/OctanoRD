@@ -1,14 +1,15 @@
 export const FUEL_BRANDS = [
-  'Puma',
   'Shell',
+  'Texaco',
+  'Total',
   'Isla',
   'Esso',
-  'Texaco',
-  'Delta',
-  'Sol',
-  'Listo',
-  'Nacional',
-  'Otro',
+  'Propagas',
+  'Sigma',
+  'Petronan',
+  'Credigas',
+  'Nativa',
+  'Sin Marca',
 ] as const
 
 export type FuelBrand = (typeof FUEL_BRANDS)[number]

@@ -6,6 +6,7 @@ import { FUEL_BRANDS } from '@/lib/constants'
 interface Props {
   visible: boolean
   onClose: () => void
+  stationCount: number
 }
 
 const RATING_OPTIONS = [
@@ -15,7 +16,7 @@ const RATING_OPTIONS = [
   { label: '4.0+', value: 4.0 },
 ]
 
-export default function MapFilters({ visible, onClose }: Props) {
+export default function MapFilters({ visible, onClose, stationCount }: Props) {
   const { filters, setFilters, resetFilters } = useMapStore()
 
   const toggleBrand = (brand: string) => {
@@ -26,6 +27,8 @@ export default function MapFilters({ visible, onClose }: Props) {
       setFilters({ brands: [...current, brand] })
     }
   }
+
+  const hasFilters = filters.brands.length > 0 || filters.minRating > 0
 
   return (
     <Modal
@@ -38,10 +41,12 @@ export default function MapFilters({ visible, onClose }: Props) {
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-gray-100">
           <Text className="text-lg font-bold text-gray-900">Filtros</Text>
-          <View className="flex-row gap-3">
-            <TouchableOpacity onPress={() => { resetFilters(); onClose() }}>
-              <Text className="text-gray-500 text-sm">Limpiar</Text>
-            </TouchableOpacity>
+          <View className="flex-row items-center gap-4">
+            {hasFilters && (
+              <TouchableOpacity onPress={resetFilters}>
+                <Text className="text-blue-700 text-sm font-medium">Limpiar</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#374151" />
             </TouchableOpacity>
@@ -106,7 +111,9 @@ export default function MapFilters({ visible, onClose }: Props) {
             className="bg-blue-700 py-4 rounded-xl items-center"
             onPress={onClose}
           >
-            <Text className="text-white font-bold text-base">Aplicar filtros</Text>
+            <Text className="text-white font-bold text-base">
+              Mostrar {stationCount} gasolineras
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

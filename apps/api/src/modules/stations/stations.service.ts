@@ -42,6 +42,19 @@ export class StationsService {
     return results
   }
 
+  async findAll() {
+    const results = await this.db.execute(sql`
+      SELECT
+        id, name, brand, lat, lng, address, municipality, province,
+        phone, hours, services, fuel_types, avg_rating, review_count,
+        verified, claimed, osm_id, created_at, updated_at
+      FROM gas_stations
+      WHERE geom IS NOT NULL
+      ORDER BY name ASC
+    `)
+    return results
+  }
+
   async findOne(id: string) {
     const [station] = await this.db
       .select()
