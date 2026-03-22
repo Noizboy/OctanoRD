@@ -18,14 +18,14 @@ export default function MyReviewsScreen() {
 
   if (!deviceHash) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#09090b' }}>
         <ActivityIndicator size="large" color="#f97316" />
       </View>
     )
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+    <View style={{ flex: 1, backgroundColor: '#09090b' }}>
       {isLoading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color="#f97316" />
@@ -44,10 +44,10 @@ export default function MyReviewsScreen() {
           }
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingVertical: 80, paddingHorizontal: 32 }}>
-              <View style={{ width: 80, height: 80, borderRadius: 28, backgroundColor: '#f97316' + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 28, backgroundColor: '#f9731622', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                 <Star size={40} color="#f97316" weight="fill" />
               </View>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', textAlign: 'center' }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#fafafa', textAlign: 'center' }}>
                 Aún no has calificado ninguna gasolinera
               </Text>
               <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>

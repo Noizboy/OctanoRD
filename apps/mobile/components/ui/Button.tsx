@@ -14,8 +14,8 @@ interface Props extends TouchableOpacityProps {
 
 const VARIANTS: Record<Variant, { bg: string; border: string; text: string; loaderColor: string }> = {
   primary:   { bg: '#f97316', border: 'transparent', text: '#fff',     loaderColor: '#fff' },
-  secondary: { bg: '#fff',    border: '#0a2342',     text: '#0a2342',  loaderColor: '#0a2342' },
-  ghost:     { bg: 'transparent', border: 'transparent', text: '#64748b', loaderColor: '#64748b' },
+  secondary: { bg: '#27272a', border: '#3f3f46',     text: '#fafafa',  loaderColor: '#fafafa' },
+  ghost:     { bg: 'transparent', border: 'transparent', text: '#a1a1aa', loaderColor: '#a1a1aa' },
   danger:    { bg: '#ef4444', border: 'transparent', text: '#fff',     loaderColor: '#fff' },
 }
 
@@ -41,20 +41,20 @@ export default function Button({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.75}
+      activeOpacity={0.7}
       disabled={isDisabled}
       style={{
         height: s.height,
         paddingHorizontal: s.px,
         borderRadius: s.radius,
         backgroundColor: v.bg,
-        borderWidth: v.border !== 'transparent' ? 1.5 : 0,
+        borderWidth: v.border !== 'transparent' ? 1 : 0,
         borderColor: v.border,
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'row',
         gap: 8,
-        opacity: isDisabled ? 0.45 : 1,
+        opacity: isDisabled ? 0.4 : 1,
         alignSelf: fullWidth ? 'stretch' : 'auto',
       }}
       {...props}

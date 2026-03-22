@@ -2,9 +2,10 @@ import { Tabs } from 'expo-router'
 import { View, Text, Platform } from 'react-native'
 import { GasPump, List, Star, MagnifyingGlass } from 'phosphor-react-native'
 
-const NAVY = '#0a2342'
+const BG     = '#09090b'
+const CARD   = '#18181b'
 const ORANGE = '#f97316'
-const INACTIVE = '#64748b'
+const MUTED  = '#52525b'
 
 interface TabIconProps {
   icon: React.ReactNode
@@ -17,8 +18,8 @@ function TabIcon({ icon, label, focused }: TabIconProps) {
     <View style={{ alignItems: 'center', justifyContent: 'center', gap: 3 }}>
       <View
         style={{
-          paddingHorizontal: 14,
-          paddingVertical: 4,
+          paddingHorizontal: 16,
+          paddingVertical: 5,
           borderRadius: 20,
           backgroundColor: focused ? `${ORANGE}22` : 'transparent',
         }}
@@ -29,7 +30,7 @@ function TabIcon({ icon, label, focused }: TabIconProps) {
         style={{
           fontSize: 10,
           fontWeight: focused ? '700' : '500',
-          color: focused ? ORANGE : INACTIVE,
+          color: focused ? ORANGE : MUTED,
           letterSpacing: 0.3,
         }}
       >
@@ -45,21 +46,19 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: ORANGE,
-        tabBarInactiveTintColor: INACTIVE,
+        tabBarInactiveTintColor: MUTED,
         tabBarStyle: {
-          backgroundColor: NAVY,
-          borderTopWidth: 0,
+          backgroundColor: CARD,
+          borderTopWidth: 1,
+          borderTopColor: '#27272a',
           height: Platform.OS === 'ios' ? 80 : 64,
           paddingBottom: Platform.OS === 'ios' ? 20 : 8,
           paddingTop: 8,
-          elevation: 20,
-          shadowColor: NAVY,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.4,
-          shadowRadius: 12,
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        headerStyle: { backgroundColor: NAVY },
-        headerTintColor: '#fff',
+        headerStyle: { backgroundColor: BG },
+        headerTintColor: '#fafafa',
         headerTitleStyle: { fontWeight: '700', fontSize: 17, letterSpacing: 0.3 },
         headerShadowVisible: false,
       }}

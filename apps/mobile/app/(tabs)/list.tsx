@@ -33,16 +33,13 @@ function StationListItem({ station }: { station: GasStation }) {
     <TouchableOpacity
       activeOpacity={0.75}
       style={{
-        backgroundColor: '#fff',
+        backgroundColor: '#18181b',
         marginHorizontal: 16,
         marginVertical: 5,
         borderRadius: 18,
         padding: 16,
-        shadowColor: '#0a2342',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.07,
-        shadowRadius: 8,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#3f3f46',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
@@ -66,7 +63,7 @@ function StationListItem({ station }: { station: GasStation }) {
 
       {/* Info */}
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }} numberOfLines={1}>
+        <Text style={{ fontSize: 15, fontWeight: '700', color: '#fafafa' }} numberOfLines={1}>
           {station.name}
         </Text>
         {station.brand && (
@@ -84,9 +81,9 @@ function StationListItem({ station }: { station: GasStation }) {
             {station.fuelTypes.slice(0, 3).map((ft) => (
               <View
                 key={ft}
-                style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20 }}
+                style={{ backgroundColor: '#27272a', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20 }}
               >
-                <Text style={{ fontSize: 10, color: '#475569', fontWeight: '600' }}>
+                <Text style={{ fontSize: 10, color: '#71717a', fontWeight: '600' }}>
                   {getFuelTypeLabel(ft)}
                 </Text>
               </View>
@@ -99,7 +96,7 @@ function StationListItem({ station }: { station: GasStation }) {
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <View
           style={{
-            backgroundColor: hasRating ? ratingColor + '18' : '#f1f5f9',
+            backgroundColor: hasRating ? ratingColor + '25' : '#27272a',
             borderRadius: 10,
             paddingHorizontal: 8,
             paddingVertical: 4,
@@ -178,26 +175,28 @@ export default function ListScreen() {
   }, [allStations, coords, searchQuery, filters.brands, filters.minRating])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+    <View style={{ flex: 1, backgroundColor: '#09090b' }}>
       {/* Search bar */}
-      <View style={{ backgroundColor: '#0a2342', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 }}>
+      <View style={{ backgroundColor: '#18181b', borderBottomWidth: 1, borderBottomColor: '#3f3f46', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <View
             style={{
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#fff',
+              backgroundColor: '#27272a',
               borderRadius: 14,
               paddingHorizontal: 12,
               height: 44,
+              borderWidth: 1,
+              borderColor: '#3f3f46',
             }}
           >
-            <MagnifyingGlass size={18} color="#94a3b8" />
+            <MagnifyingGlass size={18} color="#71717a" />
             <TextInput
-              style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#0f172a' }}
+              style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#fafafa' }}
               placeholder="Buscar por nombre o marca..."
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor="#71717a"
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -249,7 +248,7 @@ export default function ListScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <StationListItem station={item} />}
         ListHeaderComponent={
-          <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          <Text style={{ fontSize: 11, color: '#52525b', fontWeight: '700', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4, letterSpacing: 0.8, textTransform: 'uppercase' }}>
             {stations.length} gasolineras
           </Text>
         }
@@ -261,10 +260,10 @@ export default function ListScreen() {
             </View>
           ) : (
             <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80, paddingHorizontal: 32 }}>
-              <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: '#f97316' + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: '#f9731622', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <MapPin size={36} color="#f97316" />
               </View>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#334155', textAlign: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#fafafa', textAlign: 'center' }}>
                 No se encontraron gasolineras
               </Text>
               <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 6 }}>

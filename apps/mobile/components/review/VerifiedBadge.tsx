@@ -13,7 +13,7 @@ export default function VerifiedBadge({ style }: Props) {
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,
-          backgroundColor: '#10b98115',
+          backgroundColor: '#10b98122',
           paddingHorizontal: 8,
           paddingVertical: 3,
           borderRadius: 20,

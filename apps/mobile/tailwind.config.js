@@ -9,21 +9,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary brand — deep petroleum navy
-        navy: {
-          50:  '#e8edf5',
-          100: '#c5d0e3',
-          200: '#9fb0cf',
-          300: '#7890bb',
-          400: '#5b77ac',
-          500: '#3e5e9d',
-          600: '#365695',
-          700: '#2c4b8a',
-          800: '#223f7e',
-          900: '#0a2342',
-          950: '#071830',
+        // Dark surfaces (zinc scale)
+        zinc: {
+          950: '#09090b',
+          900: '#18181b',
+          800: '#27272a',
+          700: '#3f3f46',
+          600: '#52525b',
+          500: '#71717a',
+          400: '#a1a1aa',
+          300: '#d4d4d8',
+          200: '#e4e4e7',
+          100: '#f4f4f5',
+          50:  '#fafafa',
         },
-        // Accent — fuel orange
+        // Accent
         fuel: {
           50:  '#fff7ed',
           100: '#ffedd5',
@@ -38,15 +38,11 @@ module.exports = {
         },
         // Rating spectrum
         rating: {
-          great:  '#10b981',
-          good:   '#22c55e',
+          good:   '#10b981',
           medium: '#f59e0b',
           bad:    '#ef4444',
-          none:   '#94a3b8',
+          none:   '#52525b',
         },
-        // Surfaces
-        surface: '#f1f5f9',
-        card:    '#ffffff',
       },
     },
   },

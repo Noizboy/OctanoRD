@@ -221,26 +221,28 @@ export default function MapScreen() {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#fff',
+            backgroundColor: '#18181b',
             borderRadius: 12,
             paddingHorizontal: 12,
             height: 44,
+            borderWidth: 1,
+            borderColor: '#3f3f46',
             ...(Platform.OS === 'ios'
-              ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 }
-              : { elevation: 4 }),
+              ? { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12 }
+              : { elevation: 8 }),
           }}
         >
-          <MagnifyingGlass size={18} color="#9ca3af" />
+          <MagnifyingGlass size={18} color="#71717a" />
           <TextInput
             style={{
               flex: 1,
               marginLeft: 8,
               fontSize: 14,
-              color: '#111827',
+              color: '#fafafa',
               paddingVertical: 0,
             }}
             placeholder="Buscar gasolinera o marca..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#52525b"
             value={search}
             onChangeText={(text) => {
               setSearch(text)
@@ -264,13 +266,15 @@ export default function MapScreen() {
           <View
             style={{
               marginTop: 4,
-              backgroundColor: '#fff',
+              backgroundColor: '#18181b',
               borderRadius: 12,
               overflow: 'hidden',
               maxHeight: 300,
+              borderWidth: 1,
+              borderColor: '#3f3f46',
               ...(Platform.OS === 'ios'
-                ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 }
-                : { elevation: 4 }),
+                ? { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12 }
+                : { elevation: 8 }),
             }}
           >
             {/* "Filter map" button at top */}
@@ -280,15 +284,15 @@ export default function MapScreen() {
                 alignItems: 'center',
                 paddingHorizontal: 14,
                 paddingVertical: 10,
-                backgroundColor: '#fff7ed',
+                backgroundColor: '#f9731618',
                 borderBottomWidth: 1,
-                borderBottomColor: '#fed7aa',
+                borderBottomColor: '#3f3f46',
                 gap: 6,
               }}
               onPress={applySearch}
             >
-              <Funnel size={14} color="#0a2342" />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#0a2342' }}>
+              <Funnel size={14} color="#f97316" />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: '#f97316' }}>
                 Filtrar mapa por "{search}" ({searchResults.length} resultados)
               </Text>
             </TouchableOpacity>
@@ -305,23 +309,23 @@ export default function MapScreen() {
                     paddingHorizontal: 14,
                     paddingVertical: 11,
                     borderBottomWidth: 1,
-                    borderBottomColor: '#f3f4f6',
+                    borderBottomColor: '#27272a',
                   }}
                   onPress={() => goToStation(item)}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#fafafa' }}>
                       {item.name}
                     </Text>
                     {item.brand && (
-                      <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>
+                      <Text style={{ fontSize: 12, color: '#71717a', marginTop: 1 }}>
                         {item.brand}
                         {item.address ? ` · ${item.address}` : ''}
                       </Text>
                     )}
                   </View>
                   {item.reviewCount > 0 && (
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: '#111827' }}>
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: '#f59e0b' }}>
                       {parseFloat(item.avgRating).toFixed(1)} ★
                     </Text>
                   )}
@@ -335,16 +339,15 @@ export default function MapScreen() {
           <View
             style={{
               marginTop: 4,
-              backgroundColor: '#fff',
+              backgroundColor: '#18181b',
               borderRadius: 12,
               padding: 16,
               alignItems: 'center',
-              ...(Platform.OS === 'ios'
-                ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 }
-                : { elevation: 4 }),
+              borderWidth: 1,
+              borderColor: '#3f3f46',
             }}
           >
-            <Text style={{ fontSize: 13, color: '#9ca3af' }}>
+            <Text style={{ fontSize: 13, color: '#71717a' }}>
               No se encontraron gasolineras
             </Text>
           </View>
@@ -353,30 +356,15 @@ export default function MapScreen() {
 
       {/* Active search filter pill */}
       {filters.search.length > 0 && (
-        <View
-          style={{
-            position: 'absolute',
-            top: insets.top + 60,
-            left: 12,
-            zIndex: 10,
-          }}
-        >
+        <View style={{ position: 'absolute', top: insets.top + 60, left: 12, zIndex: 10 }}>
           <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#0a2342',
-              borderRadius: 20,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              gap: 6,
-            }}
+            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f97316', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}
             onPress={clearSearch}
           >
-            <Text style={{ fontSize: 12, color: '#fff', fontWeight: '600' }}>
+            <Text style={{ fontSize: 12, color: '#fff', fontWeight: '700' }}>
               "{filters.search}" · {visibleStations.length}
             </Text>
-            <X size={14} color="#fff" />
+            <X size={14} color="#fff" weight="bold" />
           </TouchableOpacity>
         </View>
       )}
@@ -387,37 +375,24 @@ export default function MapScreen() {
           position: 'absolute',
           top: insets.top + 8,
           right: 12,
-          backgroundColor: activeFilterCount > 0 ? '#0a2342' : '#fff',
+          backgroundColor: activeFilterCount > 0 ? '#f97316' : '#18181b',
           borderRadius: 12,
           width: 44,
           height: 44,
           alignItems: 'center',
           justifyContent: 'center',
+          borderWidth: 1,
+          borderColor: activeFilterCount > 0 ? '#f97316' : '#3f3f46',
           ...(Platform.OS === 'ios'
-            ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 }
-            : { elevation: 4 }),
+            ? { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12 }
+            : { elevation: 8 }),
         }}
         onPress={() => setShowFilters(true)}
       >
-        <SlidersHorizontal
-          size={20}
-          color={activeFilterCount > 0 ? '#fff' : '#0a2342'}
-        />
+        <SlidersHorizontal size={20} color="#fff" />
         {activeFilterCount > 0 && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 4,
-              right: 4,
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              width: 16,
-              height: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 10, fontWeight: '800', color: '#0a2342' }}>
+          <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#fff', borderRadius: 8, width: 16, height: 16, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: '#f97316' }}>
               {activeFilterCount}
             </Text>
           </View>
@@ -430,11 +405,13 @@ export default function MapScreen() {
             position: 'absolute',
             top: insets.top + 60,
             alignSelf: 'center',
-            backgroundColor: '#fff',
+            backgroundColor: '#18181b',
             borderRadius: 20,
             paddingHorizontal: 16,
             paddingVertical: 8,
-            elevation: 3,
+            borderWidth: 1,
+            borderColor: '#3f3f46',
+            elevation: 8,
           }}
         >
           <ActivityIndicator color="#f97316" />
