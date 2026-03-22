@@ -1,11 +1,11 @@
 import { Tabs } from 'expo-router'
 import { View, Text, Platform } from 'react-native'
-import { GasPump, List, Star, MagnifyingGlass } from 'phosphor-react-native'
+import { GasPump, List, Star } from 'phosphor-react-native'
 
 const BG     = '#09090b'
 const CARD   = '#18181b'
 const ORANGE = '#f97316'
-const MUTED  = '#52525b'
+const MUTED  = '#94a3b8'
 
 interface TabIconProps {
   icon: React.ReactNode
@@ -46,7 +46,7 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: ORANGE,
-        tabBarInactiveTintColor: MUTED,
+        tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
           backgroundColor: CARD,
           borderTopWidth: 1,
@@ -90,19 +90,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Buscar',
-          tabBarIcon: ({ focused, color, size }) => (
-            <TabIcon
-              icon={<MagnifyingGlass size={size} color={color} weight={focused ? 'bold' : 'regular'} />}
-              label="Buscar"
-              focused={focused}
-            />
-          ),
-        }}
-      />
+      <Tabs.Screen name="search" options={{ href: null }} />
       <Tabs.Screen
         name="my-reviews"
         options={{
