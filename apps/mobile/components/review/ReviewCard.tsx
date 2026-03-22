@@ -1,11 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import { ThumbsUp, Flag, Receipt, GasPump } from 'phosphor-react-native'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import api from '@/lib/api'
-import { getDeviceFingerprint } from '@/lib/utils/fingerprint'
-import RatingStars from './RatingStars'
-import VerifiedBadge from './VerifiedBadge'
+import { View, Text } from 'react-native'
+import { Receipt, GasPump, Star, CheckCircle } from 'phosphor-react-native'
 import type { Review } from '@/lib/queries/types'
 
 const CARD   = '#18181b'
@@ -14,6 +8,8 @@ const BORDER = '#3f3f46'
 const TEXT   = '#fafafa'
 const MUTED  = '#a1a1aa'
 const DIM    = '#71717a'
+const ORANGE = '#f97316'
+const GREEN  = '#10b981'
 
 const FUEL_LABELS: Record<string, string> = {
   regular:        'Regular',
@@ -24,9 +20,17 @@ const FUEL_LABELS: Record<string, string> = {
 
 const FUEL_COLORS: Record<string, string> = {
   regular:        '#3b82f6',
-  premium:        '#f97316',
-  gasoil_optimo:  '#10b981',
+  premium:        ORANGE,
+  gasoil_optimo:  GREEN,
   gasoil_regular: '#a78bfa',
+}
+
+const STAR_LABELS: Record<number, string> = {
+  1: 'Malo',
+  2: 'Regular',
+  3: 'Bueno',
+  4: 'Muy bueno',
+  5: 'Excelente',
 }
 
 interface Props {
@@ -45,31 +49,23 @@ function timeAgo(dateStr: string): string {
   return `hace ${months} mes${months > 1 ? 'es' : ''}`
 }
 
+function getAvatarColor(stars: number): string {
+  if (stars >= 4) return GREEN
+  if (stars >= 3) return '#f59e0b'
+  return '#ef4444'
+}
+
 export default function ReviewCard({ review }: Props) {
-  const queryClient = useQueryClient()
-  const [deviceHash, setDeviceHash] = useState<string | null>(null)
   const fuelColor = FUEL_COLORS[review.fuelType] ?? DIM
-  const ratingColor = review.stars >= 4 ? '#10b981' : review.stars >= 3 ? '#f59e0b' : '#ef4444'
-
-  useEffect(() => {
-    getDeviceFingerprint().then(setDeviceHash)
-  }, [])
-
-  const voteMutation = useMutation({
-    mutationFn: async (vote: 'helpful' | 'spam') => {
-      if (!deviceHash) return
-      await api.post(`/reviews/${review.id}/vote`, { vote, deviceHash })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] })
-    },
-  })
+  const ratingColor = review.stars >= 4 ? GREEN : review.stars >= 3 ? '#f59e0b' : '#ef4444'
+  const avatarColor = getAvatarColor(review.stars)
+  const initials = review.stars >= 4 ? '★' : review.stars >= 3 ? '◆' : '●'
 
   return (
     <View
       style={{
         backgroundColor: CARD,
-        borderRadius: 18,
+        borderRadius: 20,
         marginHorizontal: 16,
         marginVertical: 5,
         borderWidth: 1,
@@ -77,79 +73,123 @@ export default function ReviewCard({ review }: Props) {
         overflow: 'hidden',
       }}
     >
-      {/* Thin rating bar */}
-      <View style={{ height: 2, backgroundColor: ratingColor }} />
+      {/* Top color accent bar */}
+      <View style={{ height: 2.5, backgroundColor: ratingColor }} />
 
-      <View style={{ padding: 14 }}>
-        {/* Top row */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <RatingStars rating={review.stars} readonly size={13} />
-            <Text style={{ fontSize: 13, fontWeight: '700', color: ratingColor }}>
-              {review.stars.toFixed(1)}
+      <View style={{ padding: 16 }}>
+        {/* Header row: avatar + rating badge + time */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          {/* Anonymous avatar */}
+          <View style={{
+            width: 42, height: 42, borderRadius: 14,
+            backgroundColor: `${avatarColor}20`,
+            borderWidth: 1.5, borderColor: `${avatarColor}40`,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Text style={{ fontSize: 16, color: avatarColor }}>{initials}</Text>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: MUTED }}>Usuario anónimo</Text>
+            <Text style={{ fontSize: 11, color: DIM, marginTop: 1 }}>{timeAgo(review.createdAt)}</Text>
+          </View>
+
+          {/* Rating badge */}
+          <View style={{
+            backgroundColor: `${ratingColor}18`,
+            borderRadius: 12, borderWidth: 1, borderColor: `${ratingColor}30`,
+            paddingHorizontal: 10, paddingVertical: 6,
+            alignItems: 'center',
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Star size={12} color={ratingColor} weight="fill" />
+              <Text style={{ fontSize: 20, fontWeight: '900', color: ratingColor, lineHeight: 24 }}>
+                {review.stars}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 9, fontWeight: '700', color: ratingColor, marginTop: 1, letterSpacing: 0.3 }}>
+              {STAR_LABELS[review.stars] ?? ''}
             </Text>
           </View>
-          <Text style={{ fontSize: 11, color: DIM, fontWeight: '500' }}>
-            {timeAgo(review.createdAt)}
-          </Text>
         </View>
 
-        {/* Fuel + verified */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: `${fuelColor}18`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
-            <GasPump size={11} color={fuelColor} weight="fill" />
-            <Text style={{ fontSize: 11, fontWeight: '700', color: fuelColor }}>
+        {/* Stars row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 10 }}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Star
+              key={i}
+              size={15}
+              color={i <= review.stars ? ratingColor : '#52525b'}
+              weight={i <= review.stars ? 'fill' : 'regular'}
+            />
+          ))}
+        </View>
+
+        {/* Fuel type + verified badge */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            backgroundColor: `${fuelColor}18`,
+            paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+            borderWidth: 1, borderColor: `${fuelColor}30`,
+          }}>
+            <GasPump size={12} color={fuelColor} weight="fill" />
+            <Text style={{ fontSize: 12, fontWeight: '700', color: fuelColor }}>
               {FUEL_LABELS[review.fuelType] ?? review.fuelType}
             </Text>
           </View>
-          {review.receiptVerified && <VerifiedBadge />}
+          {review.receiptVerified && (
+            <View style={{
+              flexDirection: 'row', alignItems: 'center', gap: 4,
+              backgroundColor: `${GREEN}15`,
+              paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+              borderWidth: 1, borderColor: `${GREEN}30`,
+            }}>
+              <CheckCircle size={12} color={GREEN} weight="fill" />
+              <Text style={{ fontSize: 12, fontWeight: '700', color: GREEN }}>Verificada</Text>
+            </View>
+          )}
         </View>
 
         {/* Comment */}
         {review.comment ? (
-          <Text style={{ fontSize: 14, color: TEXT, lineHeight: 20 }}>{review.comment}</Text>
+          <Text style={{ fontSize: 14, color: TEXT, lineHeight: 21, marginBottom: 12 }}>
+            {review.comment}
+          </Text>
         ) : (
-          <Text style={{ fontSize: 13, color: DIM, fontStyle: 'italic' }}>Sin comentario</Text>
+          <Text style={{ fontSize: 13, color: DIM, fontStyle: 'italic', marginBottom: 12 }}>
+            Sin comentario adicional
+          </Text>
         )}
 
-        {/* OCR */}
+        {/* OCR receipt data */}
         {review.ocrExtracted && (review.ocrExtracted as { amount?: string }).amount && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, backgroundColor: CARD2, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}>
-            <Receipt size={13} color={DIM} />
-            <Text style={{ fontSize: 12, color: MUTED }}>
-              RD$<Text style={{ fontWeight: '700', color: TEXT }}>{(review.ocrExtracted as { amount: string }).amount}</Text>
-              {(review.ocrExtracted as { liters?: string }).liters && (
-                <Text> · {(review.ocrExtracted as { liters: string }).liters}L</Text>
-              )}
-            </Text>
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            backgroundColor: CARD2, borderRadius: 12,
+            paddingHorizontal: 14, paddingVertical: 10,
+            borderWidth: 1, borderColor: BORDER,
+            marginBottom: 12,
+          }}>
+            <Receipt size={14} color={DIM} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 11, color: DIM, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2 }}>
+                Factura verificada
+              </Text>
+              <Text style={{ fontSize: 13, color: MUTED }}>
+                <Text style={{ fontWeight: '800', color: TEXT }}>
+                  RD${(review.ocrExtracted as { amount: string }).amount}
+                </Text>
+                {(review.ocrExtracted as { liters?: string }).liters && (
+                  <Text style={{ color: DIM }}>
+                    {' '}· {(review.ocrExtracted as { liters: string }).liters}L
+                  </Text>
+                )}
+              </Text>
+            </View>
           </View>
         )}
 
-        {/* Divider */}
-        <View style={{ height: 1, backgroundColor: BORDER, marginTop: 12, marginBottom: 10 }} />
-
-        {/* Votes */}
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: CARD2, borderRadius: 20, borderWidth: 1, borderColor: BORDER }}
-            onPress={() => voteMutation.mutate('helpful')}
-            disabled={!deviceHash}
-          >
-            <ThumbsUp size={13} color={review.helpfulCount > 0 ? '#10b981' : DIM} weight="fill" />
-            <Text style={{ fontSize: 12, fontWeight: '600', color: review.helpfulCount > 0 ? '#10b981' : DIM }}>
-              Útil {review.helpfulCount > 0 ? `(${review.helpfulCount})` : ''}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: CARD2, borderRadius: 20, borderWidth: 1, borderColor: BORDER }}
-            onPress={() => voteMutation.mutate('spam')}
-            disabled={!deviceHash}
-          >
-            <Flag size={13} color={DIM} />
-            <Text style={{ fontSize: 12, fontWeight: '600', color: DIM }}>Reportar</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </View>
   )

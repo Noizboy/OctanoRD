@@ -29,9 +29,10 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: '#1e40af' },
-            headerTintColor: '#fff',
-            headerTitleStyle: { fontWeight: 'bold' },
+            headerStyle: { backgroundColor: '#09090b' },
+            headerTintColor: '#fafafa',
+            headerTitleStyle: { fontWeight: '700', fontSize: 17, letterSpacing: 0.3 },
+            headerShadowVisible: false,
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

@@ -16,9 +16,12 @@ export interface MapViewport {
 interface MapStore {
   filters: MapFilters
   viewport: MapViewport | null
+  focusStationId: string | null
   setFilters: (filters: Partial<MapFilters>) => void
   setViewport: (viewport: MapViewport) => void
   resetFilters: () => void
+  setFocusStationId: (id: string) => void
+  clearFocusStation: () => void
 }
 
 const DEFAULT_FILTERS: MapFilters = {
@@ -30,6 +33,7 @@ const DEFAULT_FILTERS: MapFilters = {
 export const useMapStore = create<MapStore>((set) => ({
   filters: DEFAULT_FILTERS,
   viewport: null,
+  focusStationId: null,
 
   setFilters: (partial) =>
     set((state) => ({
@@ -39,4 +43,8 @@ export const useMapStore = create<MapStore>((set) => ({
   setViewport: (viewport) => set({ viewport }),
 
   resetFilters: () => set({ filters: DEFAULT_FILTERS }),
+
+  setFocusStationId: (id) => set({ focusStationId: id }),
+
+  clearFocusStation: () => set({ focusStationId: null }),
 }))

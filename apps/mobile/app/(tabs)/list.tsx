@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import * as Location from 'expo-location'
-import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal, GasPump, Star } from 'phosphor-react-native'
+import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal, GasPump, Star, MapTrifold } from 'phosphor-react-native'
 import { useAllStations } from '@/lib/queries/useNearbyStations'
 import { useMapStore } from '@/lib/stores/mapStore'
 import { getRatingColor, getFuelTypeLabel } from '@/lib/constants'
@@ -24,99 +24,124 @@ function distanceLabel(meters?: number): string {
 
 function StationListItem({ station }: { station: GasStation }) {
   const router = useRouter()
+  const { setFocusStationId } = useMapStore()
   const rating = parseFloat(station.avgRating)
   const hasRating = station.reviewCount > 0
   const ratingColor = getRatingColor(rating)
   const dist = (station as GasStation & { distance_meters?: number }).distance_meters
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.75}
+    <View
       style={{
         backgroundColor: '#18181b',
         marginHorizontal: 16,
         marginVertical: 5,
         borderRadius: 18,
-        padding: 16,
         borderWidth: 1,
         borderColor: '#3f3f46',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
+        overflow: 'hidden',
       }}
-      onPress={() => router.push(`/station/${station.id}`)}
     >
-      {/* Gas pump icon */}
-      <View
-        style={{
-          width: 46,
-          height: 46,
-          borderRadius: 14,
-          backgroundColor: '#f97316' + '15',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
+      {/* Main info row */}
+      <TouchableOpacity
+        activeOpacity={0.75}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 }}
+        onPress={() => router.push(`/station/${station.id}`)}
       >
-        <GasPump size={22} color="#f97316" weight="fill" />
-      </View>
-
-      {/* Info */}
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 15, fontWeight: '700', color: '#fafafa' }} numberOfLines={1}>
-          {station.name}
-        </Text>
-        {station.brand && (
-          <Text style={{ fontSize: 12, color: '#f97316', fontWeight: '600', marginTop: 1 }}>
-            {station.brand}
-          </Text>
-        )}
-        {station.address && (
-          <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }} numberOfLines={1}>
-            {station.address}
-          </Text>
-        )}
-        {station.fuelTypes && station.fuelTypes.length > 0 && (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-            {station.fuelTypes.slice(0, 3).map((ft) => (
-              <View
-                key={ft}
-                style={{ backgroundColor: '#27272a', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20 }}
-              >
-                <Text style={{ fontSize: 10, color: '#71717a', fontWeight: '600' }}>
-                  {getFuelTypeLabel(ft)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* Rating + distance */}
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        {/* Gas pump icon */}
         <View
           style={{
-            backgroundColor: hasRating ? ratingColor + '25' : '#27272a',
-            borderRadius: 10,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
+            width: 46,
+            height: 46,
+            borderRadius: 14,
+            backgroundColor: '#f9731615',
             alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Star size={12} color={hasRating ? ratingColor : '#52525b'} weight="fill" />
-            <Text style={{ fontSize: 16, fontWeight: '800', color: hasRating ? ratingColor : '#94a3b8' }}>
-              {hasRating ? rating.toFixed(1) : '--'}
-            </Text>
-          </View>
+          <GasPump size={22} color="#f97316" weight="fill" />
         </View>
-        {dist != null && (
-          <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>
-            {distanceLabel(dist)}
+
+        {/* Info */}
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: '#fafafa' }} numberOfLines={1}>
+            {station.name}
           </Text>
-        )}
-      </View>
-    </TouchableOpacity>
+          {station.brand && (
+            <Text style={{ fontSize: 12, color: '#f97316', fontWeight: '600', marginTop: 1 }}>
+              {station.brand}
+            </Text>
+          )}
+          {station.address && (
+            <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }} numberOfLines={1}>
+              {station.address}
+            </Text>
+          )}
+          {station.fuelTypes && station.fuelTypes.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+              {station.fuelTypes.slice(0, 3).map((ft) => (
+                <View
+                  key={ft}
+                  style={{ backgroundColor: '#27272a', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20 }}
+                >
+                  <Text style={{ fontSize: 10, color: '#71717a', fontWeight: '600' }}>
+                    {getFuelTypeLabel(ft)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Rating + distance */}
+        <View style={{ alignItems: 'flex-end', gap: 4 }}>
+          <View
+            style={{
+              backgroundColor: hasRating ? ratingColor + '25' : '#27272a',
+              borderRadius: 10,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              alignItems: 'center',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Star size={12} color={hasRating ? ratingColor : '#52525b'} weight="fill" />
+              <Text style={{ fontSize: 16, fontWeight: '800', color: hasRating ? ratingColor : '#94a3b8' }}>
+                {hasRating ? rating.toFixed(1) : '--'}
+              </Text>
+            </View>
+          </View>
+          {dist != null && (
+            <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>
+              {distanceLabel(dist)}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
+
+      {/* Ver en mapa button */}
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          paddingVertical: 10,
+          borderTopWidth: 1,
+          borderTopColor: '#27272a',
+          backgroundColor: '#27272a',
+        }}
+        onPress={() => {
+          setFocusStationId(station.id)
+          router.push('/')
+        }}
+      >
+        <MapTrifold size={15} color="#f97316" weight="fill" />
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#f97316' }}>Ver en mapa</Text>
+      </TouchableOpacity>
+    </View>
   )
 }
 
@@ -192,11 +217,11 @@ export default function ListScreen() {
               borderColor: '#3f3f46',
             }}
           >
-            <MagnifyingGlass size={18} color="#71717a" />
+            <MagnifyingGlass size={18} color="#a1a1aa" />
             <TextInput
               style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#fafafa' }}
               placeholder="Buscar por nombre o marca..."
-              placeholderTextColor="#71717a"
+              placeholderTextColor="#a1a1aa"
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"

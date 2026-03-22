@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { useFocusEffect } from 'expo-router'
 import {
   View,
   Text,
@@ -68,7 +69,7 @@ export default function MapScreen() {
   const [showFilters, setShowFilters] = useState(false)
   const [search, setSearch] = useState('')
   const [showResults, setShowResults] = useState(false)
-  const { filters, setFilters, setViewport } = useMapStore()
+  const { filters, setFilters, setViewport, focusStationId, clearFocusStation } = useMapStore()
   const queryClient = useQueryClient()
 
   const { data: allStations = [], isLoading } = useAllStations()
@@ -114,6 +115,34 @@ export default function MapScreen() {
     return unsubscribe
   }, [queryClient])
 
+  const goToStation = useCallback((station: GasStation) => {
+    setSearch('')
+    setShowResults(false)
+    Keyboard.dismiss()
+    setSelectedStation(station)
+    mapRef.current?.animateToRegion(
+      {
+        latitude: parseFloat(station.lat),
+        longitude: parseFloat(station.lng),
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      },
+      500,
+    )
+  }, [])
+
+  // Focus station coming from list tab
+  useFocusEffect(
+    useCallback(() => {
+      if (!focusStationId || allStations.length === 0) return
+      const station = allStations.find((s) => s.id === focusStationId)
+      if (station) {
+        clearFocusStation()
+        setTimeout(() => goToStation(station), 300)
+      }
+    }, [focusStationId, allStations, goToStation, clearFocusStation]),
+  )
+
   // Get location and center map
   useEffect(() => {
     async function requestLocation() {
@@ -143,22 +172,6 @@ export default function MapScreen() {
     (region: Region) => setViewport(region),
     [setViewport],
   )
-
-  const goToStation = (station: GasStation) => {
-    setSearch('')
-    setShowResults(false)
-    Keyboard.dismiss()
-    setSelectedStation(station)
-    mapRef.current?.animateToRegion(
-      {
-        latitude: parseFloat(station.lat),
-        longitude: parseFloat(station.lng),
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      },
-      500,
-    )
-  }
 
   // Apply search as a map filter (hides non-matching markers)
   const applySearch = () => {

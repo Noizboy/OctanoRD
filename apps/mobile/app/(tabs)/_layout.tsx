@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router'
 import { View, Text, Platform } from 'react-native'
-import { GasPump, MagnifyingGlass, Star } from 'phosphor-react-native'
+import { GasPump, MagnifyingGlass, UserCircle } from 'phosphor-react-native'
 
 const BG     = '#09090b'
 const CARD   = '#18181b'
@@ -94,11 +94,11 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="my-reviews"
         options={{
-          title: 'Mis Calificaciones',
+          title: 'Historial',
           tabBarIcon: ({ focused, color, size }) => (
             <TabIcon
-              icon={<Star size={size} color={color} weight={focused ? 'fill' : 'regular'} />}
-              label="Mis Cal."
+              icon={<UserCircle size={size} color={color} weight={focused ? 'fill' : 'regular'} />}
+              label="Yo"
               focused={focused}
             />
           ),
