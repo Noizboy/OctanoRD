@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../api'
+import { uploadApi as api } from '../api'
 import type { Review } from './types'
 
 interface SubmitReviewPayload {

@@ -10,13 +10,8 @@ export default () => ({
     url: process.env.REDIS_URL ?? 'redis://localhost:6379',
   },
 
-  minio: {
-    endpoint: process.env.MINIO_ENDPOINT ?? 'localhost',
-    port: parseInt(process.env.MINIO_PORT ?? '9000', 10),
-    accessKey: process.env.MINIO_ACCESS_KEY ?? 'minioadmin',
-    secretKey: process.env.MINIO_SECRET_KEY ?? 'minioadmin',
-    bucketReceipts: process.env.MINIO_BUCKET_RECEIPTS ?? 'receipts',
-    useSSL: process.env.MINIO_USE_SSL === 'true',
+  storage: {
+    localPath: process.env.STORAGE_LOCAL_PATH ?? '',
   },
 
   jwt: {

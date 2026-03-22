@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, ActivityIndicator } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Star } from 'phosphor-react-native'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { getDeviceFingerprint } from '@/lib/utils/fingerprint'
 import { useMyReviews } from '@/lib/queries/useMyReviews'
@@ -44,7 +44,7 @@ export default function MyReviewsScreen() {
           }
           ListEmptyComponent={
             <View className="items-center py-20 px-6">
-              <Ionicons name="star-outline" size={56} color="#9ca3af" />
+              <Star size={56} color="#9ca3af" />
               <Text className="text-lg font-semibold text-gray-700 mt-4 text-center">
                 Aun no has calificado ninguna gasolinera
               </Text>

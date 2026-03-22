@@ -9,10 +9,10 @@ import {
 } from 'react-native'
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Ionicons } from '@expo/vector-icons'
+import { MapPin, Phone, ShieldCheck, Star } from 'phosphor-react-native'
 import api from '@/lib/api'
 import { onRatingUpdated } from '@/lib/socket'
-import { getRatingColor, RATING_COLORS } from '@/lib/constants'
+import { getRatingColor, getFuelTypeLabel, RATING_COLORS } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
 import ReviewCard from '@/components/review/ReviewCard'
 import { useStationReviews } from '@/lib/queries/useStationReviews'
@@ -87,7 +87,7 @@ export default function StationDetailScreen() {
             ) : null}
             {station.address ? (
               <View className="flex-row items-center mt-2">
-                <Ionicons name="location-outline" size={14} color="#6b7280" />
+                <MapPin size={14} color="#6b7280" />
                 <Text className="text-sm text-gray-500 ml-1">{station.address}</Text>
               </View>
             ) : null}
@@ -126,7 +126,7 @@ export default function StationDetailScreen() {
             className="flex-row items-center mt-3"
             onPress={() => Linking.openURL(`tel:${station.phone}`)}
           >
-            <Ionicons name="call-outline" size={16} color="#2563eb" />
+            <Phone size={16} color="#2563eb" />
             <Text className="text-sm text-blue-600 ml-1">{station.phone}</Text>
           </TouchableOpacity>
         ) : null}
@@ -134,7 +134,7 @@ export default function StationDetailScreen() {
         {/* Verified badge */}
         {station.verified && (
           <View className="flex-row items-center mt-3">
-            <Ionicons name="shield-checkmark" size={16} color="#22c55e" />
+            <ShieldCheck size={16} color="#22c55e" weight="fill" />
             <Text className="text-sm text-green-600 ml-1">Gasolinera verificada</Text>
           </View>
         )}
@@ -147,7 +147,7 @@ export default function StationDetailScreen() {
           <View className="flex-row flex-wrap gap-2">
             {station.fuelTypes.map((ft) => (
               <View key={ft} className="bg-blue-50 px-3 py-1 rounded-full">
-                <Text className="text-sm text-blue-700">{ft}</Text>
+                <Text className="text-sm text-blue-700">{getFuelTypeLabel(ft)}</Text>
               </View>
             ))}
           </View>
@@ -160,7 +160,7 @@ export default function StationDetailScreen() {
           className="bg-blue-700 py-4 rounded-xl flex-row items-center justify-center"
           onPress={() => router.push(`/review/new?stationId=${id}`)}
         >
-          <Ionicons name="star" size={20} color="#fff" />
+          <Star size={20} color="#fff" weight="fill" />
           <Text className="text-white font-semibold text-base ml-2">
             Calificar esta gasolinera
           </Text>

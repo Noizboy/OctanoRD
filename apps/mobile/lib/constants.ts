@@ -79,6 +79,14 @@ export const RATING_THRESHOLDS = {
   medium: 2.5,
 } as const
 
+const fuelTypeLabels: Record<string, string> = Object.fromEntries(
+  FUEL_TYPES.map((ft) => [ft.key, ft.label]),
+)
+
+export function getFuelTypeLabel(key: string): string {
+  return fuelTypeLabels[key] ?? key
+}
+
 export function getRatingColor(rating: number | null | undefined): string {
   if (rating == null || rating === 0) return RATING_COLORS.none
   if (rating >= RATING_THRESHOLDS.good) return RATING_COLORS.good

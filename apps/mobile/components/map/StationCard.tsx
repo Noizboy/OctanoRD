@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import { X } from 'phosphor-react-native'
 import { getRatingColor } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
 import type { GasStation } from '@/lib/queries/types'
@@ -22,7 +22,7 @@ export default function StationCard({ station, onClose }: Props) {
         className="absolute top-3 right-3 w-8 h-8 items-center justify-center rounded-full bg-gray-100"
         onPress={onClose}
       >
-        <Ionicons name="close" size={18} color="#6b7280" />
+        <X size={18} color="#6b7280" />
       </TouchableOpacity>
 
       <View className="flex-row items-start pr-10">
@@ -53,17 +53,6 @@ export default function StationCard({ station, onClose }: Props) {
       {station.reviewCount > 0 && (
         <View className="mt-2">
           <RatingStars rating={rating} readonly size={16} />
-        </View>
-      )}
-
-      {/* Fuel types */}
-      {station.fuelTypes && station.fuelTypes.length > 0 && (
-        <View className="flex-row flex-wrap mt-2 gap-1">
-          {station.fuelTypes.slice(0, 3).map((ft) => (
-            <View key={ft} className="bg-gray-100 px-2 py-0.5 rounded-full">
-              <Text className="text-xs text-gray-600">{ft}</Text>
-            </View>
-          ))}
         </View>
       )}
 

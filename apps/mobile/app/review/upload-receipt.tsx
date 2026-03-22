@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { useMutation } from '@tanstack/react-query'
-import { Ionicons } from '@expo/vector-icons'
-import api from '@/lib/api'
+import { Camera, Images, Receipt, Check } from 'phosphor-react-native'
+import { uploadApi } from '@/lib/api'
 import { useReviewDraftStore } from '@/lib/stores/reviewDraftStore'
 
 interface UploadResponse {
@@ -39,10 +39,14 @@ export default function UploadReceiptScreen() {
         type: mimeType,
       } as unknown as Blob)
 
-      const response = await api.post<UploadResponse>(
+      const response = await uploadApi.post<UploadResponse>(
         '/storage/receipt/upload',
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          transformRequest: (data: unknown) => data,
+          timeout: 60000,
+        },
       )
       return response.data
     },
@@ -62,9 +66,9 @@ export default function UploadReceiptScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.85,
+      quality: 0.7,
       allowsEditing: true,
+      exif: false,
     })
 
     if (!result.canceled && result.assets[0]) {
@@ -82,8 +86,9 @@ export default function UploadReceiptScreen() {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      quality: 0.85,
+      quality: 0.7,
       allowsEditing: true,
+      exif: false,
     })
 
     if (!result.canceled && result.assets[0]) {
@@ -117,13 +122,13 @@ export default function UploadReceiptScreen() {
             )}
             {uploadedId && !uploadMutation.isPending && (
               <View className="absolute top-3 right-3 bg-green-500 rounded-full p-1.5">
-                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Check size={16} color="#fff" weight="bold" />
               </View>
             )}
           </View>
         ) : (
           <View className="border-2 border-dashed border-gray-300 rounded-2xl h-48 items-center justify-center mb-4 bg-white">
-            <Ionicons name="receipt-outline" size={48} color="#9ca3af" />
+            <Receipt size={48} color="#9ca3af" />
             <Text className="text-gray-400 mt-2">Vista previa de la factura</Text>
           </View>
         )}
@@ -135,7 +140,7 @@ export default function UploadReceiptScreen() {
             onPress={takePhoto}
             disabled={uploadMutation.isPending}
           >
-            <Ionicons name="camera" size={24} color="#1e40af" />
+            <Camera size={24} color="#1e40af" />
             <Text className="text-blue-700 font-medium mt-1 text-sm">Tomar foto</Text>
           </TouchableOpacity>
 
@@ -144,7 +149,7 @@ export default function UploadReceiptScreen() {
             onPress={pickFromGallery}
             disabled={uploadMutation.isPending}
           >
-            <Ionicons name="images" size={24} color="#1e40af" />
+            <Images size={24} color="#1e40af" />
             <Text className="text-blue-700 font-medium mt-1 text-sm">Galeria</Text>
           </TouchableOpacity>
         </View>

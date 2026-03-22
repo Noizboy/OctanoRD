@@ -1,25 +1,5 @@
 import { Tabs } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-
-type IoniconName = React.ComponentProps<typeof Ionicons>['name']
-
-interface TabConfig {
-  name: string
-  title: string
-  icon: IoniconName
-  iconFocused: IoniconName
-}
-
-const tabs: TabConfig[] = [
-  { name: 'index', title: 'Mapa', icon: 'map-outline', iconFocused: 'map' },
-  { name: 'list', title: 'Lista', icon: 'list-outline', iconFocused: 'list' },
-  {
-    name: 'my-reviews',
-    title: 'Mis Calificaciones',
-    icon: 'star-outline',
-    iconFocused: 'star',
-  },
-]
+import { Compass, ListBullets, Star } from 'phosphor-react-native'
 
 export default function TabsLayout() {
   return (
@@ -33,24 +13,34 @@ export default function TabsLayout() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      {tabs.map((tab) => (
-        <Tabs.Screen
-          key={tab.name}
-          name={tab.name}
-          options={{
-            title: tab.title,
-            headerShown: tab.name !== 'index',
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={focused ? tab.iconFocused : tab.icon}
-                size={size}
-                color={color}
-              />
-            ),
-          }}
-        />
-      ))}
-      {/* Hide search tab from navbar but keep the route */}
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Mapa',
+          headerShown: false,
+          tabBarIcon: ({ focused, color, size }) => (
+            <Compass size={size} color={color} weight={focused ? 'fill' : 'regular'} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="list"
+        options={{
+          title: 'Lista',
+          tabBarIcon: ({ focused, color, size }) => (
+            <ListBullets size={size} color={color} weight={focused ? 'fill' : 'regular'} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="my-reviews"
+        options={{
+          title: 'Mis Calificaciones',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Star size={size} color={color} weight={focused ? 'fill' : 'regular'} />
+          ),
+        }}
+      />
       <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
   )

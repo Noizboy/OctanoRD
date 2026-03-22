@@ -1,9 +1,19 @@
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
+import { NestExpressApplication } from '@nestjs/platform-express'
+import { join } from 'path'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+
+  // Serve uploaded receipts as static files
+  const uploadsPath = process.env.STORAGE_LOCAL_PATH ?? join(process.cwd(), 'uploads')
+  app.useStaticAssets(uploadsPath, { prefix: '/uploads/' })
+
+  // Increase JSON body limit for large payloads
+  app.useBodyParser('json', { limit: '15mb' })
+  app.useBodyParser('urlencoded', { limit: '15mb', extended: true })
 
   app.useGlobalPipes(
     new ValidationPipe({

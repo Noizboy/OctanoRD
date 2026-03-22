@@ -1,12 +1,32 @@
+import { useEffect } from 'react'
 import { View, FlatList, ActivityIndicator, Text } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { useQuery } from '@tanstack/react-query'
+import { ChatCircle } from 'phosphor-react-native'
+import api from '@/lib/api'
 import { useStationReviews } from '@/lib/queries/useStationReviews'
 import ReviewCard from '@/components/review/ReviewCard'
-import type { Review } from '@/lib/queries/types'
+import type { GasStation, Review } from '@/lib/queries/types'
 
 export default function StationReviewsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const navigation = useNavigation()
+
+  const { data: station } = useQuery<GasStation>({
+    queryKey: ['station', id],
+    queryFn: async () => {
+      const response = await api.get<GasStation>(`/stations/${id}`)
+      return response.data
+    },
+    enabled: !!id,
+  })
+
+  useEffect(() => {
+    if (station?.name) {
+      navigation.setOptions({ title: `Opiniones — ${station.name}` })
+    }
+  }, [station, navigation])
+
   const {
     data,
     isLoading,
@@ -35,7 +55,7 @@ export default function StationReviewsScreen() {
         ListEmptyComponent={
           isLoading ? null : (
             <View className="items-center py-20">
-              <Ionicons name="chatbubble-outline" size={48} color="#9ca3af" />
+              <ChatCircle size={48} color="#9ca3af" />
               <Text className="text-gray-400 mt-4">Sin opiniones todavia</Text>
             </View>
           )

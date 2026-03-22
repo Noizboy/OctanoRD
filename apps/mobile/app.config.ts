@@ -40,6 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.octanord.app',
     versionCode: 1,
+    usesCleartextTraffic: true,
     permissions: [
       'ACCESS_FINE_LOCATION',
       'ACCESS_COARSE_LOCATION',

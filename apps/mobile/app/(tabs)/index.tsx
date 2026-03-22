@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 import MapView, { type Region } from 'react-native-maps'
 import * as Location from 'expo-location'
-import { Ionicons } from '@expo/vector-icons'
+import { MagnifyingGlass, XCircle, Funnel, X, SlidersHorizontal } from 'phosphor-react-native'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAllStations } from '@/lib/queries/useNearbyStations'
 import { useMapStore } from '@/lib/stores/mapStore'
@@ -230,7 +230,7 @@ export default function MapScreen() {
               : { elevation: 4 }),
           }}
         >
-          <Ionicons name="search" size={18} color="#9ca3af" />
+          <MagnifyingGlass size={18} color="#9ca3af" />
           <TextInput
             style={{
               flex: 1,
@@ -254,7 +254,7 @@ export default function MapScreen() {
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={clearSearch}>
-              <Ionicons name="close-circle" size={18} color="#9ca3af" />
+              <XCircle size={18} color="#9ca3af" weight="fill" />
             </TouchableOpacity>
           )}
         </View>
@@ -287,7 +287,7 @@ export default function MapScreen() {
               }}
               onPress={applySearch}
             >
-              <Ionicons name="funnel-outline" size={14} color="#1e40af" />
+              <Funnel size={14} color="#1e40af" />
               <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e40af' }}>
                 Filtrar mapa por "{search}" ({searchResults.length} resultados)
               </Text>
@@ -376,7 +376,7 @@ export default function MapScreen() {
             <Text style={{ fontSize: 12, color: '#fff', fontWeight: '600' }}>
               "{filters.search}" · {visibleStations.length}
             </Text>
-            <Ionicons name="close" size={14} color="#fff" />
+            <X size={14} color="#fff" />
           </TouchableOpacity>
         </View>
       )}
@@ -399,8 +399,7 @@ export default function MapScreen() {
         }}
         onPress={() => setShowFilters(true)}
       >
-        <Ionicons
-          name="options-outline"
+        <SlidersHorizontal
           size={20}
           color={activeFilterCount > 0 ? '#fff' : '#1e40af'}
         />

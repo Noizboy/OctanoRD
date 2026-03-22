@@ -1,5 +1,5 @@
 import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { X } from 'phosphor-react-native'
 import { useMapStore } from '@/lib/stores/mapStore'
 import { FUEL_BRANDS } from '@/lib/constants'
 
@@ -11,9 +11,11 @@ interface Props {
 
 const RATING_OPTIONS = [
   { label: 'Todas', value: 0 },
-  { label: '2.5+', value: 2.5 },
-  { label: '3.5+', value: 3.5 },
-  { label: '4.0+', value: 4.0 },
+  { label: '1+', value: 1 },
+  { label: '2+', value: 2 },
+  { label: '3+', value: 3 },
+  { label: '4+', value: 4 },
+  { label: '5', value: 5 },
 ]
 
 export default function MapFilters({ visible, onClose, stationCount }: Props) {
@@ -48,7 +50,7 @@ export default function MapFilters({ visible, onClose, stationCount }: Props) {
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <X size={24} color="#374151" />
             </TouchableOpacity>
           </View>
         </View>

@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
-import { Ionicons } from '@expo/vector-icons'
+import { MagnifyingGlass, XCircle, MapPin, CaretUp, CaretDown } from 'phosphor-react-native'
 import api from '@/lib/api'
 import { DR_PROVINCES, getRatingColor } from '@/lib/constants'
 import type { GasStation } from '@/lib/queries/types'
@@ -40,7 +40,7 @@ export default function SearchScreen() {
     <View className="flex-1 bg-gray-50">
       <View className="bg-white px-4 pt-4 pb-3 shadow-sm">
         <View className="flex-row items-center bg-gray-100 rounded-xl px-3 py-2">
-          <Ionicons name="search" size={20} color="#6b7280" />
+          <MagnifyingGlass size={20} color="#6b7280" />
           <TextInput
             className="flex-1 ml-2 text-base text-gray-900"
             placeholder="Buscar gasolinera..."
@@ -51,7 +51,7 @@ export default function SearchScreen() {
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#9ca3af" />
+              <XCircle size={20} color="#9ca3af" weight="fill" />
             </TouchableOpacity>
           )}
         </View>
@@ -60,16 +60,15 @@ export default function SearchScreen() {
           className="flex-row items-center mt-3"
           onPress={() => setShowProvinces(!showProvinces)}
         >
-          <Ionicons name="location-outline" size={16} color="#6b7280" />
+          <MapPin size={16} color="#6b7280" />
           <Text className="text-sm text-gray-600 ml-1">
             {selectedProvince ?? 'Filtrar por provincia'}
           </Text>
-          <Ionicons
-            name={showProvinces ? 'chevron-up' : 'chevron-down'}
-            size={16}
-            color="#6b7280"
-            style={{ marginLeft: 4 }}
-          />
+          {showProvinces ? (
+            <CaretUp size={16} color="#6b7280" style={{ marginLeft: 4 }} />
+          ) : (
+            <CaretDown size={16} color="#6b7280" style={{ marginLeft: 4 }} />
+          )}
         </TouchableOpacity>
 
         {showProvinces && (
@@ -130,6 +129,11 @@ export default function SearchScreen() {
                         .filter(Boolean)
                         .join(' · ')}
                     </Text>
+                    {item.address && (
+                      <Text className="text-xs text-gray-400 mt-0.5" numberOfLines={1}>
+                        {item.address}
+                      </Text>
+                    )}
                   </View>
                   <Text className="text-sm font-bold" style={{ color: ratingColor }}>
                     {item.reviewCount > 0 ? parseFloat(item.avgRating).toFixed(1) : '--'}
@@ -141,12 +145,12 @@ export default function SearchScreen() {
           ListEmptyComponent={
             query.length >= 2 || selectedProvince ? (
               <View className="items-center py-16">
-                <Ionicons name="search-outline" size={48} color="#9ca3af" />
+                <MagnifyingGlass size={48} color="#9ca3af" />
                 <Text className="text-gray-400 mt-3">Sin resultados</Text>
               </View>
             ) : (
               <View className="items-center py-16">
-                <Ionicons name="search-outline" size={48} color="#9ca3af" />
+                <MagnifyingGlass size={48} color="#9ca3af" />
                 <Text className="text-gray-400 mt-3">
                   Escribe al menos 2 caracteres para buscar
                 </Text>

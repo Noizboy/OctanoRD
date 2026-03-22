@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Receipt } from 'phosphor-react-native'
 
 interface Props {
   style?: object
@@ -21,7 +21,7 @@ export default function VerifiedBadge({ style }: Props) {
         style,
       ]}
     >
-      <Ionicons name="receipt" size={12} color="#16a34a" />
+      <Receipt size={12} color="#16a34a" weight="fill" />
       <Text
         style={{ color: '#16a34a', fontSize: 11, fontWeight: '600', marginLeft: 4 }}
       >

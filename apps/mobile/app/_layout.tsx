@@ -40,6 +40,10 @@ export default function RootLayout() {
             options={{ title: 'Gasolinera' }}
           />
           <Stack.Screen
+            name="station/[id]/reviews"
+            options={{ title: 'Opiniones' }}
+          />
+          <Stack.Screen
             name="review/new"
             options={{ title: 'Nueva Calificacion' }}
           />

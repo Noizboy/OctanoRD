@@ -1,5 +1,5 @@
 import { View, TouchableOpacity } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Star } from 'phosphor-react-native'
 
 interface Props {
   rating: number
@@ -20,12 +20,11 @@ export default function RatingStars({
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {stars.map((star) => {
         const filled = star <= Math.round(rating)
-        const icon = filled ? 'star' : 'star-outline'
         const color = filled ? '#eab308' : '#d1d5db'
 
         if (readonly) {
           return (
-            <Ionicons key={star} name={icon} size={size} color={color} />
+            <Star key={star} size={size} color={color} weight={filled ? 'fill' : 'regular'} />
           )
         }
 
@@ -35,10 +34,10 @@ export default function RatingStars({
             onPress={() => onRate?.(star)}
             hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
           >
-            <Ionicons
-              name={star <= rating ? 'star' : 'star-outline'}
+            <Star
               size={size}
               color={star <= rating ? '#eab308' : '#d1d5db'}
+              weight={star <= rating ? 'fill' : 'regular'}
             />
           </TouchableOpacity>
         )

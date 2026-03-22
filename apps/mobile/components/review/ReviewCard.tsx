@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { ThumbsUp, Flag } from 'phosphor-react-native'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
@@ -97,7 +97,7 @@ export default function ReviewCard({ review }: Props) {
           onPress={() => voteMutation.mutate('helpful')}
           disabled={!deviceHash}
         >
-          <Ionicons name="thumbs-up-outline" size={15} color="#6b7280" />
+          <ThumbsUp size={15} color="#6b7280" />
           <Text className="text-xs text-gray-500">{review.helpfulCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -105,7 +105,7 @@ export default function ReviewCard({ review }: Props) {
           onPress={() => voteMutation.mutate('spam')}
           disabled={!deviceHash}
         >
-          <Ionicons name="flag-outline" size={15} color="#6b7280" />
+          <Flag size={15} color="#6b7280" />
           <Text className="text-xs text-gray-500">Reportar</Text>
         </TouchableOpacity>
       </View>

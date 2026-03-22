@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   FlatList,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import * as Location from 'expo-location'
-import { Ionicons } from '@expo/vector-icons'
-import { useNearbyStations } from '@/lib/queries/useNearbyStations'
-import { getRatingColor } from '@/lib/constants'
+import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal } from 'phosphor-react-native'
+import { useAllStations } from '@/lib/queries/useNearbyStations'
+import { useMapStore } from '@/lib/stores/mapStore'
+import { getRatingColor, getFuelTypeLabel } from '@/lib/constants'
+import MapFilters from '@/components/map/MapFilters'
 import type { GasStation } from '@/lib/queries/types'
 
 function distanceLabel(meters?: number): string {
@@ -60,7 +63,7 @@ function StationListItem({ station }: { station: GasStation }) {
         <View className="flex-row flex-wrap mt-2 gap-1">
           {station.fuelTypes.map((ft) => (
             <View key={ft} className="bg-blue-50 px-2 py-0.5 rounded-full">
-              <Text className="text-xs text-blue-700">{ft}</Text>
+              <Text className="text-xs text-blue-700">{getFuelTypeLabel(ft)}</Text>
             </View>
           ))}
         </View>
@@ -69,9 +72,23 @@ function StationListItem({ station }: { station: GasStation }) {
   )
 }
 
+function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export default function ListScreen() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
-  const { data: stations = [], isLoading, refetch } = useNearbyStations(coords)
+  const { data: allStations = [], isLoading, refetch } = useAllStations()
+  const { filters } = useMapStore()
+  const activeFilterCount = filters.brands.length + (filters.minRating > 0 ? 1 : 0)
 
   useEffect(() => {
     Location.getForegroundPermissionsAsync().then(async ({ status }) => {
@@ -84,8 +101,71 @@ export default function ListScreen() {
     })
   }, [])
 
+  const stations = useMemo(() => {
+    let list = allStations
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.brand?.toLowerCase().includes(q),
+      )
+    }
+    if (filters.brands.length > 0) {
+      list = list.filter((s) => s.brand && filters.brands.includes(s.brand))
+    }
+    if (filters.minRating > 0) {
+      list = list.filter((s) => parseFloat(s.avgRating) >= filters.minRating)
+    }
+    if (!coords) return list
+    return list
+      .map((s) => ({
+        ...s,
+        distance_meters: getDistance(coords.lat, coords.lng, parseFloat(s.lat), parseFloat(s.lng)),
+      }))
+      .sort((a, b) => a.distance_meters - b.distance_meters)
+  }, [allStations, coords, searchQuery, filters.brands, filters.minRating])
+
   return (
     <View className="flex-1 bg-gray-50">
+      <View className="bg-white px-4 pt-4 pb-3 shadow-sm">
+        <View className="flex-row items-center gap-2">
+          <View className="flex-1 flex-row items-center bg-gray-100 rounded-xl px-3 py-2">
+            <MagnifyingGlass size={20} color="#6b7280" />
+            <TextInput
+              className="flex-1 ml-2 text-base text-gray-900"
+              placeholder="Buscar por nombre o marca..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <XCircle size={20} color="#9ca3af" weight="fill" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            className={`w-11 h-11 rounded-xl items-center justify-center ${
+              activeFilterCount > 0 ? 'bg-blue-700' : 'bg-gray-100'
+            }`}
+            onPress={() => setShowFilters(true)}
+          >
+            <SlidersHorizontal
+              size={20}
+              color={activeFilterCount > 0 ? '#fff' : '#1e40af'}
+            />
+            {activeFilterCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-white rounded-full w-4 h-4 items-center justify-center">
+                <Text className="text-[10px] font-extrabold text-blue-700">
+                  {activeFilterCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
       <FlatList
         data={stations}
         keyExtractor={(item) => item.id}
@@ -103,7 +183,7 @@ export default function ListScreen() {
             </View>
           ) : (
             <View className="flex-1 items-center justify-center py-20">
-              <Ionicons name="location-outline" size={48} color="#9ca3af" />
+              <MapPin size={48} color="#9ca3af" />
               <Text className="text-gray-500 mt-4">No se encontraron gasolineras</Text>
             </View>
           )
@@ -111,6 +191,11 @@ export default function ListScreen() {
         onRefresh={refetch}
         refreshing={isLoading}
         contentContainerStyle={{ paddingBottom: 16 }}
+      />
+      <MapFilters
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+        stationCount={stations.length}
       />
     </View>
   )

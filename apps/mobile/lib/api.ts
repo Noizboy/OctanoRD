@@ -33,7 +33,8 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const hadToken = !!originalRequest.headers.Authorization
+    if (error.response?.status === 401 && !originalRequest._retry && hadToken) {
       originalRequest._retry = true
 
       if (isRefreshing) {
@@ -80,5 +81,11 @@ api.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+// Separate instance for file uploads — no auth interceptors, no default Content-Type
+export const uploadApi = axios.create({
+  baseURL: BASE_URL,
+  timeout: 60000,
+})
 
 export default api
