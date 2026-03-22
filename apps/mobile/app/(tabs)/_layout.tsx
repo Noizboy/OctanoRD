@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router'
 import { View, Text, Platform } from 'react-native'
-import { GasPump, List, Star } from 'phosphor-react-native'
+import { GasPump, MagnifyingGlass, Star } from 'phosphor-react-native'
 
 const BG     = '#09090b'
 const CARD   = '#18181b'
@@ -80,11 +80,11 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="list"
         options={{
-          title: 'Gasolineras',
+          title: 'Buscar',
           tabBarIcon: ({ focused, color, size }) => (
             <TabIcon
-              icon={<List size={size} color={color} weight={focused ? 'fill' : 'regular'} />}
-              label="Lista"
+              icon={<MagnifyingGlass size={size} color={color} weight={focused ? 'bold' : 'regular'} />}
+              label="Buscar"
               focused={focused}
             />
           ),
