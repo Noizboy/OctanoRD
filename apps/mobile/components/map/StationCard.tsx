@@ -81,16 +81,11 @@ export default function StationCard({ station, onClose }: Props) {
           </View>
 
           {/* Rating badge */}
-          <View style={{ backgroundColor: `${ratingColor}20`, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, alignItems: 'center', marginLeft: 10 }}>
+          <View style={{ backgroundColor: `${ratingColor}20`, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 10 }}>
+            <Star size={14} color={ratingColor} weight="fill" />
             <Text style={{ fontSize: 20, fontWeight: '800', color: ratingColor, lineHeight: 24 }}>
               {hasRating ? rating.toFixed(1) : '--'}
             </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 1 }}>
-              <Star size={9} color={ratingColor} weight="fill" />
-              <Text style={{ fontSize: 9, color: ratingColor, fontWeight: '700' }}>
-                {station.reviewCount} ops.
-              </Text>
-            </View>
           </View>
 
           {/* Close */}

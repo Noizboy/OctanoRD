@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import * as Location from 'expo-location'
-import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal, GasPump } from 'phosphor-react-native'
+import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal, GasPump, Star } from 'phosphor-react-native'
 import { useAllStations } from '@/lib/queries/useNearbyStations'
 import { useMapStore } from '@/lib/stores/mapStore'
 import { getRatingColor, getFuelTypeLabel } from '@/lib/constants'
@@ -103,12 +103,12 @@ function StationListItem({ station }: { station: GasStation }) {
             alignItems: 'center',
           }}
         >
-          <Text style={{ fontSize: 16, fontWeight: '800', color: hasRating ? ratingColor : '#94a3b8' }}>
-            {hasRating ? rating.toFixed(1) : '--'}
-          </Text>
-          <Text style={{ fontSize: 9, color: hasRating ? ratingColor : '#94a3b8', fontWeight: '600' }}>
-            {station.reviewCount} ops
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Star size={12} color={hasRating ? ratingColor : '#52525b'} weight="fill" />
+            <Text style={{ fontSize: 16, fontWeight: '800', color: hasRating ? ratingColor : '#94a3b8' }}>
+              {hasRating ? rating.toFixed(1) : '--'}
+            </Text>
+          </View>
         </View>
         {dist != null && (
           <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>
