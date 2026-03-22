@@ -9,14 +9,32 @@ import {
 } from 'react-native'
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { MapPin, Phone, ShieldCheck, Star } from 'phosphor-react-native'
+import { MapPin, Phone, ShieldCheck, Star, GasPump, PencilSimple, CaretRight } from 'phosphor-react-native'
 import api from '@/lib/api'
 import { onRatingUpdated } from '@/lib/socket'
-import { getRatingColor, getFuelTypeLabel, RATING_COLORS } from '@/lib/constants'
+import { getRatingColor, getFuelTypeLabel } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
 import ReviewCard from '@/components/review/ReviewCard'
 import { useStationReviews } from '@/lib/queries/useStationReviews'
 import type { GasStation, Review } from '@/lib/queries/types'
+
+const BG     = '#09090b'
+const CARD   = '#18181b'
+const CARD2  = '#27272a'
+const BORDER = '#3f3f46'
+const TEXT   = '#fafafa'
+const MUTED  = '#a1a1aa'
+const DIM    = '#71717a'
+const ORANGE = '#f97316'
+
+function getRatingLabel(r: number, count: number) {
+  if (count === 0) return 'Sin calificaciones aún'
+  if (r >= 4.5) return 'Excelente'
+  if (r >= 4)   return 'Muy bueno'
+  if (r >= 3)   return 'Bueno'
+  if (r >= 2)   return 'Regular'
+  return 'Malo'
+}
 
 export default function StationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -38,19 +56,21 @@ export default function StationDetailScreen() {
 
   useEffect(() => {
     if (station?.name) {
-      navigation.setOptions({ title: station.name })
+      navigation.setOptions({
+        title: station.name,
+        headerStyle: { backgroundColor: BG },
+        headerTintColor: TEXT,
+        headerShadowVisible: false,
+      })
     }
   }, [station, navigation])
 
-  // Subscribe to real-time rating updates for this station
   useEffect(() => {
     if (!id) return
     const unsubscribe = onRatingUpdated((data) => {
       if (data.stationId !== id) return
       queryClient.setQueryData<GasStation>(['station', id], (old) =>
-        old
-          ? { ...old, avgRating: String(data.avgRating), reviewCount: data.reviewCount }
-          : old,
+        old ? { ...old, avgRating: String(data.avgRating), reviewCount: data.reviewCount } : old,
       )
     })
     return unsubscribe
@@ -58,122 +78,144 @@ export default function StationDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#1e40af" />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: BG }}>
+        <ActivityIndicator size="large" color={ORANGE} />
       </View>
     )
   }
 
   if (!station) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-gray-500">Gasolinera no encontrada</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: BG }}>
+        <Text style={{ color: MUTED }}>Gasolinera no encontrada</Text>
       </View>
     )
   }
 
   const rating = parseFloat(station.avgRating)
-  const ratingColor = getRatingColor(rating)
+  const hasRating = station.reviewCount > 0
+  const ratingColor = hasRating ? getRatingColor(rating) : DIM
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Header Card */}
-      <View className="bg-white p-5 shadow-sm">
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1 mr-3">
-            <Text className="text-xl font-bold text-gray-900">{station.name}</Text>
-            {station.brand ? (
-              <Text className="text-base text-blue-700 mt-0.5">{station.brand}</Text>
-            ) : null}
-            {station.address ? (
-              <View className="flex-row items-center mt-2">
-                <MapPin size={14} color="#6b7280" />
-                <Text className="text-sm text-gray-500 ml-1">{station.address}</Text>
-              </View>
-            ) : null}
-            {station.province ? (
-              <Text className="text-sm text-gray-400 mt-0.5">
-                {[station.municipality, station.province].filter(Boolean).join(', ')}
-              </Text>
-            ) : null}
+    <ScrollView style={{ flex: 1, backgroundColor: BG }} contentContainerStyle={{ paddingBottom: 32 }}>
+
+      {/* Hero card */}
+      <View style={{ backgroundColor: CARD, borderBottomWidth: 1, borderBottomColor: BORDER, padding: 20 }}>
+        {/* Top accent bar */}
+        <View style={{ height: 3, backgroundColor: ratingColor, borderRadius: 2, marginBottom: 18 }} />
+
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
+          {/* Gas pump icon */}
+          <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: `${ORANGE}20`, alignItems: 'center', justifyContent: 'center' }}>
+            <GasPump size={28} color={ORANGE} weight="fill" />
           </View>
 
-          {/* Rating badge */}
-          <View className="items-center">
-            <View
-              className="w-16 h-16 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: ratingColor + '18' }}
-            >
-              <Text className="text-2xl font-bold" style={{ color: ratingColor }}>
-                {station.reviewCount > 0 ? rating.toFixed(1) : '--'}
+          {/* Name & info */}
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: TEXT, letterSpacing: -0.5 }}>
+              {station.name}
+            </Text>
+            {station.brand && (
+              <Text style={{ fontSize: 14, fontWeight: '700', color: ORANGE, marginTop: 2 }}>
+                {station.brand}
               </Text>
-            </View>
-            <Text className="text-xs text-gray-400 mt-1">
-              {station.reviewCount} {station.reviewCount === 1 ? 'opinion' : 'opiniones'}
+            )}
+            {station.address && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 }}>
+                <MapPin size={13} color={DIM} />
+                <Text style={{ fontSize: 12, color: MUTED, flex: 1 }} numberOfLines={2}>
+                  {station.address}
+                </Text>
+              </View>
+            )}
+            {station.province && (
+              <Text style={{ fontSize: 11, color: DIM, marginTop: 2 }}>
+                {[station.municipality, station.province].filter(Boolean).join(', ')}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Rating row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 18, padding: 14, backgroundColor: CARD2, borderRadius: 16, borderWidth: 1, borderColor: BORDER }}>
+          <View style={{ alignItems: 'center', minWidth: 52 }}>
+            <Text style={{ fontSize: 36, fontWeight: '900', color: ratingColor, lineHeight: 40 }}>
+              {hasRating ? rating.toFixed(1) : '--'}
+            </Text>
+            <Text style={{ fontSize: 10, color: ratingColor, fontWeight: '700', marginTop: 2 }}>
+              {getRatingLabel(rating, station.reviewCount)}
+            </Text>
+          </View>
+          <View style={{ width: 1, height: 44, backgroundColor: BORDER }} />
+          <View style={{ flex: 1, gap: 6 }}>
+            <RatingStars rating={rating} readonly size={20} />
+            <Text style={{ fontSize: 12, color: DIM }}>
+              {station.reviewCount} {station.reviewCount === 1 ? 'calificación' : 'calificaciones'}
             </Text>
           </View>
         </View>
 
-        {station.reviewCount > 0 && (
-          <View className="mt-3">
-            <RatingStars rating={rating} readonly size={20} />
-          </View>
-        )}
-
-        {/* Phone */}
-        {station.phone ? (
-          <TouchableOpacity
-            className="flex-row items-center mt-3"
-            onPress={() => Linking.openURL(`tel:${station.phone}`)}
-          >
-            <Phone size={16} color="#2563eb" />
-            <Text className="text-sm text-blue-600 ml-1">{station.phone}</Text>
-          </TouchableOpacity>
-        ) : null}
-
-        {/* Verified badge */}
-        {station.verified && (
-          <View className="flex-row items-center mt-3">
-            <ShieldCheck size={16} color="#22c55e" weight="fill" />
-            <Text className="text-sm text-green-600 ml-1">Gasolinera verificada</Text>
-          </View>
-        )}
+        {/* Phone & verified */}
+        <View style={{ gap: 8, marginTop: 14 }}>
+          {station.phone && (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              onPress={() => Linking.openURL(`tel:${station.phone}`)}
+            >
+              <Phone size={15} color={ORANGE} />
+              <Text style={{ fontSize: 13, color: ORANGE, fontWeight: '600' }}>{station.phone}</Text>
+            </TouchableOpacity>
+          )}
+          {station.verified && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <ShieldCheck size={15} color="#10b981" weight="fill" />
+              <Text style={{ fontSize: 13, color: '#10b981', fontWeight: '600' }}>Gasolinera verificada</Text>
+            </View>
+          )}
+        </View>
       </View>
 
-      {/* Fuel Types */}
-      {station.fuelTypes && station.fuelTypes.length > 0 ? (
-        <View className="bg-white mt-3 p-4 shadow-sm">
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Combustibles</Text>
-          <View className="flex-row flex-wrap gap-2">
+      {/* Fuel types */}
+      {station.fuelTypes && station.fuelTypes.length > 0 && (
+        <View style={{ backgroundColor: CARD, marginTop: 8, padding: 16, borderTopWidth: 1, borderBottomWidth: 1, borderColor: BORDER }}>
+          <Text style={{ fontSize: 11, fontWeight: '700', color: DIM, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 }}>
+            Combustibles disponibles
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {station.fuelTypes.map((ft) => (
-              <View key={ft} className="bg-blue-50 px-3 py-1 rounded-full">
-                <Text className="text-sm text-blue-700">{getFuelTypeLabel(ft)}</Text>
+              <View key={ft} style={{ backgroundColor: `${ORANGE}18`, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: `${ORANGE}30` }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: ORANGE }}>{getFuelTypeLabel(ft)}</Text>
               </View>
             ))}
           </View>
         </View>
-      ) : null}
+      )}
 
       {/* CTA */}
-      <View className="px-4 mt-4">
+      <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
         <TouchableOpacity
-          className="bg-blue-700 py-4 rounded-xl flex-row items-center justify-center"
+          style={{ backgroundColor: ORANGE, height: 54, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+          activeOpacity={0.8}
           onPress={() => router.push(`/review/new?stationId=${id}`)}
         >
-          <Star size={20} color="#fff" weight="fill" />
-          <Text className="text-white font-semibold text-base ml-2">
-            Calificar esta gasolinera
-          </Text>
+          <PencilSimple size={20} color="#fff" weight="bold" />
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Calificar esta gasolinera</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Recent Reviews */}
+      {/* Recent reviews */}
       {recentReviews.length > 0 && (
-        <View className="mt-4 px-4">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-base font-semibold text-gray-800">Ultimas opiniones</Text>
-            <TouchableOpacity onPress={() => router.push(`/station/${id}/reviews`)}>
-              <Text className="text-sm text-blue-600">Ver todas</Text>
+        <View style={{ marginTop: 24 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 10 }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: DIM, letterSpacing: 0.6, textTransform: 'uppercase' }}>
+              Últimas calificaciones
+            </Text>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}
+              onPress={() => router.push(`/station/${id}/reviews`)}
+            >
+              <Text style={{ fontSize: 13, color: ORANGE, fontWeight: '600' }}>Ver todas</Text>
+              <CaretRight size={12} color={ORANGE} weight="bold" />
             </TouchableOpacity>
           </View>
           {recentReviews.map((r) => (
@@ -182,7 +224,19 @@ export default function StationDetailScreen() {
         </View>
       )}
 
-      <View className="h-8" />
+      {recentReviews.length === 0 && (
+        <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 32, marginTop: 16 }}>
+          <View style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: `${ORANGE}15`, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Star size={28} color={ORANGE} weight="fill" />
+          </View>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: TEXT, textAlign: 'center' }}>
+            Sé el primero en calificar
+          </Text>
+          <Text style={{ fontSize: 13, color: DIM, textAlign: 'center', marginTop: 6 }}>
+            Ayuda a la comunidad compartiendo tu experiencia
+          </Text>
+        </View>
+      )}
     </ScrollView>
   )
 }

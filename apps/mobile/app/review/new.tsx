@@ -24,12 +24,24 @@ import {
   Warning,
   X,
   CaretDown,
+  GasPump,
+  PaperPlaneTilt,
 } from 'phosphor-react-native'
 import { useSubmitReview } from '@/lib/queries/useSubmitReview'
 import { useUploadReceipt } from '@/lib/queries/useUploadReceipt'
 import { getDeviceFingerprint } from '@/lib/utils/fingerprint'
 import { FUEL_TYPES } from '@/lib/constants'
 import RatingStars from '@/components/review/RatingStars'
+
+const BG     = '#09090b'
+const CARD   = '#18181b'
+const CARD2  = '#27272a'
+const BORDER = '#3f3f46'
+const TEXT   = '#fafafa'
+const MUTED  = '#a1a1aa'
+const DIM    = '#71717a'
+const ORANGE = '#f97316'
+const GREEN  = '#10b981'
 
 const schema = z.object({
   stars: z.number().int().min(1, 'Selecciona una calificacion').max(5),
@@ -41,23 +53,19 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
+const STAR_LABELS = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente']
+const STAR_COLORS = ['', '#ef4444', '#f59e0b', '#f59e0b', '#10b981', '#10b981']
+
 export default function NewReviewScreen() {
   const { stationId } = useLocalSearchParams<{ stationId: string }>()
   const router = useRouter()
   const { mutateAsync, isPending } = useSubmitReview()
-  const { receiptUri, uploadId, location, uploading, pickImage, removeReceipt } =
-    useUploadReceipt()
+  const { receiptUri, uploadId, location, uploading, pickImage, removeReceipt } = useUploadReceipt()
 
   const scrollRef = useRef<ScrollView>(null)
   const [expandedStep, setExpandedStep] = useState<number | null>(null)
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<FormValues>({
+  const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { stars: 0, fuelType: undefined },
   })
@@ -67,7 +75,7 @@ export default function NewReviewScreen() {
 
   const step1Done = !!uploadId && !uploading
   const step2Done = stars > 0
-  const step3Done = !!fuelType && fuelType.length > 0
+  const step3Done = !!fuelType
   const autoStep = !step1Done ? 1 : !step2Done ? 2 : !step3Done ? 3 : 4
   const activeStep = expandedStep ?? autoStep
   const canSubmit = step1Done && !uploading
@@ -75,24 +83,13 @@ export default function NewReviewScreen() {
 
   const onSubmit = async (values: FormValues) => {
     if (!uploadId) {
-      Alert.alert(
-        'Factura requerida',
-        'Debes adjuntar una foto de tu factura de combustible para enviar tu calificacion.',
-      )
+      Alert.alert('Factura requerida', 'Debes adjuntar una foto de tu factura para enviar tu calificacion.')
       return
     }
-
-    // TODO: re-enable OTP verification before production
-    // if (!isVerified) {
-    //   router.push(`/review/verify-otp?stationId=${stationId}`)
-    //   return
-    // }
-
     if (!stationId) {
       Alert.alert('Error', 'ID de gasolinera no encontrado')
       return
     }
-
     try {
       const deviceHash = await getDeviceFingerprint()
       await mutateAsync({
@@ -104,343 +101,298 @@ export default function NewReviewScreen() {
         deviceHash,
         turnstileToken: 'dev-bypass',
       })
-
-      Alert.alert(
-        'Gracias!',
-        'Tu calificacion fue enviada y sera verificada con tu factura.',
-        [{ text: 'OK', onPress: () => router.back() }],
-      )
+      Alert.alert('¡Gracias!', 'Tu calificacion fue enviada y sera verificada con tu factura.', [
+        { text: 'OK', onPress: () => router.back() },
+      ])
     } catch {
       Alert.alert('Error', 'No se pudo enviar tu calificacion. Intenta de nuevo.')
     }
   }
 
+  // Step indicator dot
+  function StepDot({ n, done, active }: { n: number; done: boolean; active: boolean }) {
+    const bg = done ? GREEN : active ? ORANGE : CARD2
+    const border = done ? GREEN : active ? ORANGE : BORDER
+    return (
+      <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: bg, borderWidth: 1.5, borderColor: border, alignItems: 'center', justifyContent: 'center' }}>
+        {done ? (
+          <Check size={13} color="#fff" weight="bold" />
+        ) : (
+          <Text style={{ fontSize: 12, fontWeight: '800', color: active ? '#fff' : DIM }}>{n}</Text>
+        )}
+      </View>
+    )
+  }
+
+  function StepCard({ n, title, badge, done, children }: { n: number; title: string; badge?: string; done: boolean; children: React.ReactNode }) {
+    const isActive = activeStep === n
+    const enabled = n === 1 || step1Done
+    return (
+      <View style={{ backgroundColor: CARD, borderRadius: 18, marginBottom: 10, borderWidth: 1, borderColor: isActive ? ORANGE + '60' : BORDER, overflow: 'hidden' }}>
+        <TouchableOpacity
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 }}
+          onPress={() => enabled && setExpandedStep(isActive ? null : n)}
+          activeOpacity={enabled ? 0.7 : 1}
+        >
+          <StepDot n={n} done={done} active={isActive && !done} />
+          <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: enabled ? TEXT : DIM }}>
+            {title}
+          </Text>
+          {badge && !isActive && (
+            <Text style={{ fontSize: 12, color: GREEN, fontWeight: '600', marginRight: 4 }}>{badge}</Text>
+          )}
+          {enabled && (
+            <CaretDown size={15} color={DIM} style={{ transform: [{ rotate: isActive ? '180deg' : '0deg' }] }} />
+          )}
+        </TouchableOpacity>
+        {isActive && enabled && (
+          <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+            {children}
+          </View>
+        )}
+      </View>
+    )
+  }
+
   return (
     <KeyboardAvoidingView
-      className="flex-1"
+      style={{ flex: 1, backgroundColor: BG }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <ScrollView
         ref={scrollRef}
-        className="flex-1 bg-gray-50"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="p-4">
-
-          {/* Step 1: Receipt */}
-          <View className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
-            <TouchableOpacity
-              className="flex-row items-center p-4"
-              onPress={() => setExpandedStep(activeStep === 1 ? null : 1)}
-              activeOpacity={0.7}
-            >
-              <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${step1Done ? 'bg-green-500' : 'bg-blue-700'}`}>
-                {step1Done ? (
-                  <Check size={14} color="#fff" weight="bold" />
-                ) : (
-                  <Text className="text-white text-xs font-bold">1</Text>
-                )}
-              </View>
-              <Text className="text-sm font-semibold text-gray-700 flex-1">
-                Foto de la factura
-              </Text>
-              {!step1Done && (
-                <View className="bg-red-50 px-2 py-0.5 rounded-full mr-2">
-                  <Text className="text-xs font-semibold text-red-600">Obligatorio</Text>
-                </View>
-              )}
-              {step1Done && activeStep !== 1 && (
-                <Text className="text-xs text-green-600 font-medium mr-2">Subida</Text>
-              )}
-              <CaretDown
-                size={16}
-                color="#9ca3af"
-                style={{ transform: [{ rotate: activeStep === 1 ? '180deg' : '0deg' }] }}
-              />
-            </TouchableOpacity>
-
-            {activeStep === 1 && (
-              <View className="px-4 pb-4">
-                <Text className="text-xs text-gray-400 mb-3">
-                  Se verificara el nombre de la gasolinera y tu ubicacion
-                </Text>
-
-                {receiptUri ? (
-                  <View className="rounded-xl overflow-hidden">
-                    <Image
-                      source={{ uri: receiptUri }}
-                      className="w-full h-48"
-                      resizeMode="cover"
-                    />
-                    {uploading && (
-                      <View className="absolute inset-0 bg-black/40 items-center justify-center">
-                        <ActivityIndicator color="#fff" size="large" />
-                        <Text className="text-white mt-2 font-medium">Subiendo factura...</Text>
-                      </View>
-                    )}
-                    {uploadId && !uploading && (
-                      <View className="absolute top-3 right-3 bg-green-500 rounded-full p-1.5">
-                        <Check size={16} color="#fff" weight="bold" />
-                      </View>
-                    )}
-                    {!uploading && (
-                      <TouchableOpacity
-                        className="absolute top-3 left-3 bg-white/90 rounded-full p-1.5"
-                        onPress={removeReceipt}
-                      >
-                        <X size={16} color="#374151" />
-                      </TouchableOpacity>
-                    )}
-                    {location && !uploading && (
-                      <View className="absolute bottom-3 left-3 flex-row items-center bg-white/90 rounded-full px-2.5 py-1">
-                        <MapPin size={12} color="#22c55e" weight="fill" />
-                        <Text className="text-xs text-gray-700 ml-1 font-medium">
-                          Ubicacion capturada
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                ) : (
-                  <View>
-                    <View className="border-2 border-dashed border-blue-200 rounded-xl h-36 items-center justify-center mb-3 bg-blue-50/30">
-                      <Receipt size={40} color="#93c5fd" />
-                      <Text className="text-sm text-blue-400 mt-2">
-                        Toma o selecciona tu factura
-                      </Text>
-                      <Text className="text-xs text-blue-300 mt-0.5">
-                        Se leera automaticamente el nombre y datos
-                      </Text>
-                    </View>
-                    <View className="flex-row gap-3">
-                      <TouchableOpacity
-                        className="flex-1 bg-blue-700 py-3.5 rounded-xl flex-row items-center justify-center"
-                        onPress={() => pickImage('camera')}
-                      >
-                        <Camera size={20} color="#fff" />
-                        <Text className="text-white font-semibold text-sm ml-2">Camara</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        className="flex-1 border border-blue-700 py-3.5 rounded-xl flex-row items-center justify-center"
-                        onPress={() => pickImage('gallery')}
-                      >
-                        <Images size={20} color="#1e40af" />
-                        <Text className="text-blue-700 font-semibold text-sm ml-2">Galeria</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-
-                <View className="flex-row items-start mt-3 bg-amber-50 rounded-lg px-3 py-2.5">
-                  <Warning size={16} color="#d97706" weight="fill" style={{ marginTop: 1 }} />
-                  <Text className="text-xs text-amber-700 ml-2 flex-1">
-                    La factura sera procesada para extraer fecha, monto y nombre de la gasolinera.
-                    Tu ubicacion se usa para verificar que estas en el lugar.
-                  </Text>
-                </View>
-              </View>
-            )}
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: `${ORANGE}20`, alignItems: 'center', justifyContent: 'center' }}>
+            <GasPump size={20} color={ORANGE} weight="fill" />
           </View>
-
-          {/* Step 2: Rating */}
-          <View className={`bg-white rounded-xl shadow-sm mb-4 overflow-hidden ${!step1Done ? 'opacity-40' : ''}`}>
-            <TouchableOpacity
-              className="flex-row items-center p-4"
-              onPress={() => step1Done && setExpandedStep(activeStep === 2 ? null : 2)}
-              activeOpacity={step1Done ? 0.7 : 1}
-            >
-              <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${step2Done ? 'bg-green-500' : step1Done ? 'bg-blue-700' : 'bg-gray-300'}`}>
-                {step2Done ? (
-                  <Check size={14} color="#fff" weight="bold" />
-                ) : (
-                  <Text className="text-white text-xs font-bold">2</Text>
-                )}
-              </View>
-              <Text className="text-sm font-semibold text-gray-700 flex-1">
-                Calificacion general
-              </Text>
-              {step2Done && activeStep !== 2 && (
-                <Text className="text-xs text-green-600 font-medium mr-2">
-                  {stars} estrella{stars > 1 ? 's' : ''}
-                </Text>
-              )}
-              {step1Done && (
-                <CaretDown
-                  size={16}
-                  color="#9ca3af"
-                  style={{ transform: [{ rotate: activeStep === 2 ? '180deg' : '0deg' }] }}
-                />
-              )}
-            </TouchableOpacity>
-
-            {activeStep === 2 && step1Done && (
-              <View className="px-4 pb-4">
-                <Controller
-                  control={control}
-                  name="stars"
-                  render={({ field: { onChange } }) => (
-                    <RatingStars
-                      rating={stars}
-                      readonly={false}
-                      size={40}
-                      onRate={(v) => {
-                        onChange(v)
-                        setValue('stars', v)
-                        setTimeout(() => setExpandedStep(null), 300)
-                      }}
-                    />
-                  )}
-                />
-                {errors.stars && (
-                  <Text className="text-red-500 text-xs mt-1">
-                    Selecciona una calificacion
-                  </Text>
-                )}
-              </View>
-            )}
+          <View>
+            <Text style={{ fontSize: 18, fontWeight: '800', color: TEXT, letterSpacing: -0.3 }}>
+              Nueva calificación
+            </Text>
+            <Text style={{ fontSize: 12, color: DIM, marginTop: 1 }}>
+              Completa los 4 pasos para enviar
+            </Text>
           </View>
-
-          {/* Step 3: Fuel Type */}
-          <View className={`bg-white rounded-xl shadow-sm mb-4 overflow-hidden ${!step1Done ? 'opacity-40' : ''}`}>
-            <TouchableOpacity
-              className="flex-row items-center p-4"
-              onPress={() => step1Done && setExpandedStep(activeStep === 3 ? null : 3)}
-              activeOpacity={step1Done ? 0.7 : 1}
-            >
-              <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${step3Done && step2Done ? 'bg-green-500' : step1Done ? 'bg-blue-700' : 'bg-gray-300'}`}>
-                {step3Done && step2Done ? (
-                  <Check size={14} color="#fff" weight="bold" />
-                ) : (
-                  <Text className="text-white text-xs font-bold">3</Text>
-                )}
-              </View>
-              <Text className="text-sm font-semibold text-gray-700 flex-1">
-                Tipo de combustible
-              </Text>
-              {step3Done && activeStep !== 3 && (
-                <Text className="text-xs text-green-600 font-medium mr-2">
-                  {fuelLabel}
-                </Text>
-              )}
-              {step1Done && (
-                <CaretDown
-                  size={16}
-                  color="#9ca3af"
-                  style={{ transform: [{ rotate: activeStep === 3 ? '180deg' : '0deg' }] }}
-                />
-              )}
-            </TouchableOpacity>
-
-            {activeStep === 3 && step1Done && (
-              <View className="px-4 pb-4">
-                <View className="flex-row flex-wrap gap-2">
-                  {FUEL_TYPES.map((ft) => (
-                    <TouchableOpacity
-                      key={ft.key}
-                      className={`px-4 py-2 rounded-full border ${
-                        fuelType === ft.key
-                          ? 'bg-blue-700 border-blue-700'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                      onPress={() => {
-                        setValue('fuelType', ft.key)
-                        setTimeout(() => setExpandedStep(null), 300)
-                      }}
-                    >
-                      <Text
-                        className={`text-sm font-medium ${
-                          fuelType === ft.key ? 'text-white' : 'text-gray-700'
-                        }`}
-                      >
-                        {ft.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Step 4: Comment */}
-          <View className={`bg-white rounded-xl shadow-sm mb-4 overflow-hidden ${!step1Done ? 'opacity-40' : ''}`}>
-            <TouchableOpacity
-              className="flex-row items-center p-4"
-              onPress={() => {
-                if (!step1Done) return
-                setExpandedStep(activeStep === 4 ? null : 4)
-                if (activeStep !== 4) {
-                  setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)
-                }
-              }}
-              activeOpacity={step1Done ? 0.7 : 1}
-            >
-              <View className={`w-6 h-6 rounded-full items-center justify-center mr-2 ${step1Done ? 'bg-blue-700' : 'bg-gray-300'}`}>
-                <Text className="text-white text-xs font-bold">4</Text>
-              </View>
-              <Text className="text-sm font-semibold text-gray-700 flex-1">
-                Comentario
-              </Text>
-              <Text className="text-xs text-gray-400 mr-2">(opcional)</Text>
-              {step1Done && (
-                <CaretDown
-                  size={16}
-                  color="#9ca3af"
-                  style={{ transform: [{ rotate: activeStep === 4 ? '180deg' : '0deg' }] }}
-                />
-              )}
-            </TouchableOpacity>
-
-            {activeStep === 4 && step1Done && (
-              <View className="px-4 pb-4">
-                <Controller
-                  control={control}
-                  name="comment"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      className="text-base text-gray-800 min-h-24 border border-gray-200 rounded-xl p-3"
-                      multiline
-                      textAlignVertical="top"
-                      placeholder="Comparte tu experiencia con el combustible..."
-                      placeholderTextColor="#9ca3af"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      onFocus={() => {
-                        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)
-                      }}
-                      maxLength={500}
-                    />
-                  )}
-                />
-                {errors.comment && (
-                  <Text className="text-red-500 text-xs mt-1">{errors.comment.message}</Text>
-                )}
-              </View>
-            )}
-          </View>
-
-          {/* Submit */}
-          <TouchableOpacity
-            className={`py-4 rounded-xl items-center ${canSubmit ? 'bg-blue-700' : 'bg-gray-300'}`}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isPending || !canSubmit}
-          >
-            {isPending ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text className={`font-bold text-base ${canSubmit ? 'text-white' : 'text-gray-500'}`}>
-                {!uploadId
-                  ? 'Sube tu factura para continuar'
-                  : 'Enviar Calificacion'}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <Text className="text-xs text-gray-400 text-center mt-3 px-4">
-            Tu factura sera procesada por OCR para verificar la compra.
-            No almacenamos datos personales.
-          </Text>
         </View>
+
+        {/* Step 1 — Receipt */}
+        <StepCard n={1} title="Foto de la factura" badge={step1Done ? 'Subida ✓' : undefined} done={step1Done}>
+          <Text style={{ fontSize: 12, color: DIM, marginBottom: 12 }}>
+            Se verificará el nombre de la gasolinera y tu ubicación
+          </Text>
+
+          {receiptUri ? (
+            <View style={{ borderRadius: 14, overflow: 'hidden' }}>
+              <Image source={{ uri: receiptUri }} style={{ width: '100%', height: 180 }} resizeMode="cover" />
+              {uploading && (
+                <View style={{ position: 'absolute', inset: 0, backgroundColor: '#00000066', alignItems: 'center', justifyContent: 'center' }}>
+                  <ActivityIndicator color="#fff" size="large" />
+                  <Text style={{ color: '#fff', marginTop: 8, fontWeight: '600' }}>Subiendo factura...</Text>
+                </View>
+              )}
+              {uploadId && !uploading && (
+                <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: GREEN, borderRadius: 20, padding: 6 }}>
+                  <Check size={16} color="#fff" weight="bold" />
+                </View>
+              )}
+              {!uploading && (
+                <TouchableOpacity
+                  style={{ position: 'absolute', top: 10, left: 10, backgroundColor: '#000000aa', borderRadius: 20, padding: 6 }}
+                  onPress={removeReceipt}
+                >
+                  <X size={15} color="#fff" weight="bold" />
+                </TouchableOpacity>
+              )}
+              {location && !uploading && (
+                <View style={{ position: 'absolute', bottom: 10, left: 10, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#000000aa', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
+                  <MapPin size={11} color={GREEN} weight="fill" />
+                  <Text style={{ fontSize: 11, color: '#fff', fontWeight: '600' }}>Ubicación capturada</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View>
+              <View style={{ borderWidth: 1.5, borderStyle: 'dashed', borderColor: BORDER, borderRadius: 14, height: 130, alignItems: 'center', justifyContent: 'center', marginBottom: 12, backgroundColor: CARD2 }}>
+                <Receipt size={36} color={DIM} />
+                <Text style={{ fontSize: 13, color: MUTED, marginTop: 8, fontWeight: '500' }}>
+                  Toma o selecciona tu factura
+                </Text>
+                <Text style={{ fontSize: 11, color: DIM, marginTop: 3 }}>
+                  Se leerán automáticamente los datos
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, height: 46, backgroundColor: ORANGE, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  activeOpacity={0.8}
+                  onPress={() => pickImage('camera')}
+                >
+                  <Camera size={18} color="#fff" />
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Cámara</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 1, height: 46, backgroundColor: CARD2, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: BORDER }}
+                  activeOpacity={0.8}
+                  onPress={() => pickImage('gallery')}
+                >
+                  <Images size={18} color={MUTED} />
+                  <Text style={{ color: MUTED, fontWeight: '700', fontSize: 14 }}>Galería</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 12, backgroundColor: '#f59e0b10', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#f59e0b25' }}>
+            <Warning size={15} color="#f59e0b" weight="fill" style={{ marginTop: 1 }} />
+            <Text style={{ fontSize: 11, color: '#f59e0b', flex: 1, lineHeight: 16 }}>
+              La factura será procesada para extraer fecha, monto y nombre de la gasolinera. Tu ubicación se usa solo para verificar.
+            </Text>
+          </View>
+        </StepCard>
+
+        {/* Step 2 — Stars */}
+        <StepCard
+          n={2}
+          title="Calificación general"
+          badge={step2Done ? `${stars} ${stars === 1 ? 'estrella' : 'estrellas'}` : undefined}
+          done={step2Done}
+        >
+          <View style={{ alignItems: 'center', paddingVertical: 8 }}>
+            <Controller
+              control={control}
+              name="stars"
+              render={({ field: { onChange } }) => (
+                <RatingStars
+                  rating={stars}
+                  readonly={false}
+                  size={44}
+                  onRate={(v) => {
+                    onChange(v)
+                    setValue('stars', v)
+                    setTimeout(() => setExpandedStep(null), 350)
+                  }}
+                />
+              )}
+            />
+            {stars > 0 && (
+              <Text style={{ marginTop: 10, fontSize: 14, fontWeight: '700', color: STAR_COLORS[stars] }}>
+                {STAR_LABELS[stars]}
+              </Text>
+            )}
+            {errors.stars && (
+              <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 6 }}>Selecciona una calificacion</Text>
+            )}
+          </View>
+        </StepCard>
+
+        {/* Step 3 — Fuel type */}
+        <StepCard
+          n={3}
+          title="Tipo de combustible"
+          badge={step3Done ? fuelLabel : undefined}
+          done={step3Done}
+        >
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {FUEL_TYPES.map((ft) => {
+              const active = fuelType === ft.key
+              return (
+                <TouchableOpacity
+                  key={ft.key}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                    backgroundColor: active ? ORANGE : CARD2,
+                    borderWidth: 1,
+                    borderColor: active ? ORANGE : BORDER,
+                  }}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setValue('fuelType', ft.key)
+                    setTimeout(() => setExpandedStep(null), 300)
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: active ? '#fff' : MUTED }}>
+                    {ft.label}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        </StepCard>
+
+        {/* Step 4 — Comment */}
+        <StepCard n={4} title="Comentario" done={false}>
+          <Text style={{ fontSize: 11, color: DIM, marginBottom: 10 }}>Opcional · máximo 500 caracteres</Text>
+          <Controller
+            control={control}
+            name="comment"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={{
+                  backgroundColor: CARD2,
+                  borderWidth: 1,
+                  borderColor: BORDER,
+                  borderRadius: 14,
+                  padding: 14,
+                  fontSize: 14,
+                  color: TEXT,
+                  minHeight: 100,
+                  textAlignVertical: 'top',
+                }}
+                multiline
+                placeholder="Comparte tu experiencia con el combustible..."
+                placeholderTextColor={DIM}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
+                maxLength={500}
+              />
+            )}
+          />
+        </StepCard>
+
+        {/* Submit */}
+        <TouchableOpacity
+          style={{
+            height: 54,
+            borderRadius: 16,
+            backgroundColor: canSubmit ? ORANGE : CARD2,
+            borderWidth: canSubmit ? 0 : 1,
+            borderColor: BORDER,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            marginTop: 6,
+            opacity: isPending ? 0.7 : 1,
+          }}
+          activeOpacity={0.8}
+          onPress={handleSubmit(onSubmit)}
+          disabled={isPending || !canSubmit}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <PaperPlaneTilt size={20} color={canSubmit ? '#fff' : DIM} weight="bold" />
+              <Text style={{ fontSize: 16, fontWeight: '800', color: canSubmit ? '#fff' : DIM }}>
+                {!uploadId ? 'Sube tu factura para continuar' : 'Enviar calificación'}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <Text style={{ fontSize: 11, color: DIM, textAlign: 'center', marginTop: 12, lineHeight: 16 }}>
+          Tu factura será procesada por OCR para verificar la compra.{'\n'}No almacenamos datos personales.
+        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   )
