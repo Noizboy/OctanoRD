@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import { ThumbsUp, Flag } from 'phosphor-react-native'
+import { ThumbsUp, Flag, Receipt, GasPump } from 'phosphor-react-native'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
@@ -9,10 +9,17 @@ import VerifiedBadge from './VerifiedBadge'
 import type { Review } from '@/lib/queries/types'
 
 const FUEL_LABELS: Record<string, string> = {
-  regular: 'Regular',
-  premium: 'Premium',
-  gasoil_optimo: 'Gasoil Optimo',
+  regular:        'Regular',
+  premium:        'Premium',
+  gasoil_optimo:  'Gasoil Óptimo',
   gasoil_regular: 'Gasoil Regular',
+}
+
+const FUEL_COLORS: Record<string, string> = {
+  regular:        '#3b82f6',
+  premium:        '#f97316',
+  gasoil_optimo:  '#10b981',
+  gasoil_regular: '#6366f1',
 }
 
 interface Props {
@@ -31,9 +38,20 @@ function timeAgo(dateStr: string): string {
   return `hace ${months} mes${months > 1 ? 'es' : ''}`
 }
 
+function StarsBadge({ stars }: { stars: number }) {
+  const color = stars >= 4 ? '#10b981' : stars >= 3 ? '#f59e0b' : '#ef4444'
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <RatingStars rating={stars} readonly size={13} />
+      <Text style={{ fontSize: 13, fontWeight: '700', color }}>{stars.toFixed(1)}</Text>
+    </View>
+  )
+}
+
 export default function ReviewCard({ review }: Props) {
   const queryClient = useQueryClient()
   const [deviceHash, setDeviceHash] = useState<string | null>(null)
+  const fuelColor = FUEL_COLORS[review.fuelType] ?? '#64748b'
 
   useEffect(() => {
     getDeviceFingerprint().then(setDeviceHash)
@@ -50,63 +68,126 @@ export default function ReviewCard({ review }: Props) {
   })
 
   return (
-    <View className="bg-white rounded-xl p-4 shadow-sm">
+    <View
+      style={{
+        backgroundColor: '#fff',
+        borderRadius: 18,
+        marginHorizontal: 16,
+        marginVertical: 6,
+        padding: 16,
+        shadowColor: '#0a2342',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
+      }}
+    >
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-2">
-        <View className="flex-row items-center gap-2">
-          <RatingStars rating={review.stars} readonly size={14} />
-          <Text className="text-xs text-gray-400 ml-1">
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <StarsBadge stars={review.stars} />
+        <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>
+          {timeAgo(review.createdAt)}
+        </Text>
+      </View>
+
+      {/* Fuel type tag */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            backgroundColor: fuelColor + '15',
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 20,
+          }}
+        >
+          <GasPump size={11} color={fuelColor} weight="fill" />
+          <Text style={{ fontSize: 11, fontWeight: '700', color: fuelColor }}>
             {FUEL_LABELS[review.fuelType] ?? review.fuelType}
           </Text>
         </View>
-        <Text className="text-xs text-gray-400">{timeAgo(review.createdAt)}</Text>
+        {review.receiptVerified && <VerifiedBadge />}
       </View>
-
-      {/* Verified badge */}
-      {review.receiptVerified && <VerifiedBadge style={{ marginBottom: 8 }} />}
 
       {/* Comment */}
       {review.comment ? (
-        <Text className="text-sm text-gray-700 leading-relaxed">{review.comment}</Text>
+        <Text style={{ fontSize: 14, color: '#334155', lineHeight: 20 }}>
+          {review.comment}
+        </Text>
       ) : (
-        <Text className="text-sm text-gray-400 italic">Sin comentario</Text>
+        <Text style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>
+          Sin comentario
+        </Text>
       )}
 
-      {/* OCR data */}
+      {/* OCR extracted data */}
       {review.ocrExtracted &&
-        (review.ocrExtracted as { amount?: string; date?: string; liters?: string }).amount && (
-          <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
-            <Text className="text-xs text-gray-500">
-              Monto:{' '}
-              <Text className="font-medium text-gray-700">
-                RD${(review.ocrExtracted as { amount: string }).amount}
+        (review.ocrExtracted as { amount?: string }).amount && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              marginTop: 10,
+              backgroundColor: '#f8fafc',
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+            }}
+          >
+            <Receipt size={14} color="#64748b" />
+            <Text style={{ fontSize: 12, color: '#64748b' }}>
+              RD$<Text style={{ fontWeight: '700', color: '#334155' }}>
+                {(review.ocrExtracted as { amount: string }).amount}
               </Text>
               {(review.ocrExtracted as { liters?: string }).liters && (
-                <>
-                  {' '}· {(review.ocrExtracted as { liters: string }).liters}L
-                </>
+                <Text> · {(review.ocrExtracted as { liters: string }).liters}L</Text>
               )}
             </Text>
           </View>
         )}
 
+      {/* Divider */}
+      <View style={{ height: 1, backgroundColor: '#f1f5f9', marginTop: 12, marginBottom: 10 }} />
+
       {/* Votes */}
-      <View className="flex-row gap-4 mt-3 pt-3 border-t border-gray-50">
+      <View style={{ flexDirection: 'row', gap: 8 }}>
         <TouchableOpacity
-          className="flex-row items-center gap-1"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            backgroundColor: review.helpfulCount > 0 ? '#10b98115' : '#f8fafc',
+            borderRadius: 20,
+          }}
           onPress={() => voteMutation.mutate('helpful')}
           disabled={!deviceHash}
         >
-          <ThumbsUp size={15} color="#6b7280" />
-          <Text className="text-xs text-gray-500">{review.helpfulCount}</Text>
+          <ThumbsUp size={13} color={review.helpfulCount > 0 ? '#10b981' : '#94a3b8'} weight="fill" />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: review.helpfulCount > 0 ? '#10b981' : '#94a3b8' }}>
+            Útil {review.helpfulCount > 0 ? `(${review.helpfulCount})` : ''}
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          className="flex-row items-center gap-1"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            backgroundColor: '#f8fafc',
+            borderRadius: 20,
+          }}
           onPress={() => voteMutation.mutate('spam')}
           disabled={!deviceHash}
         >
-          <Flag size={15} color="#6b7280" />
-          <Text className="text-xs text-gray-500">Reportar</Text>
+          <Flag size={13} color="#94a3b8" />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#94a3b8' }}>Reportar</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import * as Location from 'expo-location'
-import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal } from 'phosphor-react-native'
+import { MagnifyingGlass, XCircle, MapPin, SlidersHorizontal, GasPump } from 'phosphor-react-native'
 import { useAllStations } from '@/lib/queries/useNearbyStations'
 import { useMapStore } from '@/lib/stores/mapStore'
 import { getRatingColor, getFuelTypeLabel } from '@/lib/constants'
@@ -24,50 +24,101 @@ function distanceLabel(meters?: number): string {
 
 function StationListItem({ station }: { station: GasStation }) {
   const router = useRouter()
-  const ratingColor = getRatingColor(parseFloat(station.avgRating))
+  const rating = parseFloat(station.avgRating)
+  const hasRating = station.reviewCount > 0
+  const ratingColor = getRatingColor(rating)
+  const dist = (station as GasStation & { distance_meters?: number }).distance_meters
 
   return (
     <TouchableOpacity
-      className="bg-white mx-4 my-2 p-4 rounded-xl shadow-sm border border-gray-100"
+      activeOpacity={0.75}
+      style={{
+        backgroundColor: '#fff',
+        marginHorizontal: 16,
+        marginVertical: 5,
+        borderRadius: 18,
+        padding: 16,
+        shadowColor: '#0a2342',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 8,
+        elevation: 3,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+      }}
       onPress={() => router.push(`/station/${station.id}`)}
     >
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 mr-3">
-          <Text className="text-base font-semibold text-gray-900">{station.name}</Text>
-          {station.brand ? (
-            <Text className="text-sm text-gray-500 mt-0.5">{station.brand}</Text>
-          ) : null}
-          {station.address ? (
-            <Text className="text-xs text-gray-400 mt-1" numberOfLines={1}>
-              {station.address}
-            </Text>
-          ) : null}
-        </View>
-        <View className="items-end">
-          <View
-            className="rounded-full w-10 h-10 items-center justify-center"
-            style={{ backgroundColor: ratingColor + '20' }}
-          >
-            <Text className="text-sm font-bold" style={{ color: ratingColor }}>
-              {station.reviewCount > 0 ? parseFloat(station.avgRating).toFixed(1) : '--'}
-            </Text>
-          </View>
-          {(station as GasStation & { distance_meters?: number }).distance_meters != null ? (
-            <Text className="text-xs text-gray-400 mt-1">
-              {distanceLabel((station as GasStation & { distance_meters?: number }).distance_meters)}
-            </Text>
-          ) : null}
-        </View>
+      {/* Gas pump icon */}
+      <View
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 14,
+          backgroundColor: '#f97316' + '15',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <GasPump size={22} color="#f97316" weight="fill" />
       </View>
-      {station.fuelTypes && station.fuelTypes.length > 0 ? (
-        <View className="flex-row flex-wrap mt-2 gap-1">
-          {station.fuelTypes.map((ft) => (
-            <View key={ft} className="bg-blue-50 px-2 py-0.5 rounded-full">
-              <Text className="text-xs text-blue-700">{getFuelTypeLabel(ft)}</Text>
-            </View>
-          ))}
+
+      {/* Info */}
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 15, fontWeight: '700', color: '#0f172a' }} numberOfLines={1}>
+          {station.name}
+        </Text>
+        {station.brand && (
+          <Text style={{ fontSize: 12, color: '#f97316', fontWeight: '600', marginTop: 1 }}>
+            {station.brand}
+          </Text>
+        )}
+        {station.address && (
+          <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }} numberOfLines={1}>
+            {station.address}
+          </Text>
+        )}
+        {station.fuelTypes && station.fuelTypes.length > 0 && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+            {station.fuelTypes.slice(0, 3).map((ft) => (
+              <View
+                key={ft}
+                style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20 }}
+              >
+                <Text style={{ fontSize: 10, color: '#475569', fontWeight: '600' }}>
+                  {getFuelTypeLabel(ft)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Rating + distance */}
+      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        <View
+          style={{
+            backgroundColor: hasRating ? ratingColor + '18' : '#f1f5f9',
+            borderRadius: 10,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: '800', color: hasRating ? ratingColor : '#94a3b8' }}>
+            {hasRating ? rating.toFixed(1) : '--'}
+          </Text>
+          <Text style={{ fontSize: 9, color: hasRating ? ratingColor : '#94a3b8', fontWeight: '600' }}>
+            {station.reviewCount} ops
+          </Text>
         </View>
-      ) : null}
+        {dist != null && (
+          <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>
+            {distanceLabel(dist)}
+          </Text>
+        )}
+      </View>
     </TouchableOpacity>
   )
 }
@@ -127,14 +178,26 @@ export default function ListScreen() {
   }, [allStations, coords, searchQuery, filters.brands, filters.minRating])
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <View className="bg-white px-4 pt-4 pb-3 shadow-sm">
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-xl px-3 py-2">
-            <MagnifyingGlass size={20} color="#6b7280" />
+    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+      {/* Search bar */}
+      <View style={{ backgroundColor: '#0a2342', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#fff',
+              borderRadius: 14,
+              paddingHorizontal: 12,
+              height: 44,
+            }}
+          >
+            <MagnifyingGlass size={18} color="#94a3b8" />
             <TextInput
-              className="flex-1 ml-2 text-base text-gray-900"
+              style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#0f172a' }}
               placeholder="Buscar por nombre o marca..."
+              placeholderTextColor="#94a3b8"
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -142,23 +205,37 @@ export default function ListScreen() {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <XCircle size={20} color="#9ca3af" weight="fill" />
+                <XCircle size={18} color="#94a3b8" weight="fill" />
               </TouchableOpacity>
             )}
           </View>
           <TouchableOpacity
-            className={`w-11 h-11 rounded-xl items-center justify-center ${
-              activeFilterCount > 0 ? 'bg-blue-700' : 'bg-gray-100'
-            }`}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: activeFilterCount > 0 ? '#f97316' : '#ffffff22',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             onPress={() => setShowFilters(true)}
           >
-            <SlidersHorizontal
-              size={20}
-              color={activeFilterCount > 0 ? '#fff' : '#1e40af'}
-            />
+            <SlidersHorizontal size={20} color="#fff" />
             {activeFilterCount > 0 && (
-              <View className="absolute -top-1 -right-1 bg-white rounded-full w-4 h-4 items-center justify-center">
-                <Text className="text-[10px] font-extrabold text-blue-700">
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  backgroundColor: '#fff',
+                  borderRadius: 8,
+                  width: 16,
+                  height: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 10, fontWeight: '800', color: '#f97316' }}>
                   {activeFilterCount}
                 </Text>
               </View>
@@ -166,31 +243,39 @@ export default function ListScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
       <FlatList
         data={stations}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <StationListItem station={item} />}
         ListHeaderComponent={
-          <Text className="text-sm text-gray-500 px-4 py-3">
-            {stations.length} gasolineras cercanas
+          <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+            {stations.length} gasolineras
           </Text>
         }
         ListEmptyComponent={
           isLoading ? (
-            <View className="flex-1 items-center justify-center py-20">
-              <ActivityIndicator size="large" color="#1e40af" />
-              <Text className="text-gray-500 mt-4">Buscando gasolineras...</Text>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}>
+              <ActivityIndicator size="large" color="#f97316" />
+              <Text style={{ color: '#94a3b8', marginTop: 16, fontWeight: '500' }}>Buscando gasolineras...</Text>
             </View>
           ) : (
-            <View className="flex-1 items-center justify-center py-20">
-              <MapPin size={48} color="#9ca3af" />
-              <Text className="text-gray-500 mt-4">No se encontraron gasolineras</Text>
+            <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80, paddingHorizontal: 32 }}>
+              <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: '#f97316' + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <MapPin size={36} color="#f97316" />
+              </View>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#334155', textAlign: 'center' }}>
+                No se encontraron gasolineras
+              </Text>
+              <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 6 }}>
+                Intenta con otro nombre o marca
+              </Text>
             </View>
           )
         }
         onRefresh={refetch}
         refreshing={isLoading}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
       />
       <MapFilters
         visible={showFilters}

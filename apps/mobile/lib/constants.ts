@@ -68,10 +68,10 @@ export const FRAUD_LIMITS = {
 } as const
 
 export const RATING_COLORS = {
-  good: '#22c55e',
-  medium: '#eab308',
+  good: '#10b981',
+  medium: '#f59e0b',
   bad: '#ef4444',
-  none: '#6b7280',
+  none: '#94a3b8',
 } as const
 
 export const RATING_THRESHOLDS = {

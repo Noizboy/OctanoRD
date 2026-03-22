@@ -280,15 +280,15 @@ export default function MapScreen() {
                 alignItems: 'center',
                 paddingHorizontal: 14,
                 paddingVertical: 10,
-                backgroundColor: '#eff6ff',
+                backgroundColor: '#fff7ed',
                 borderBottomWidth: 1,
-                borderBottomColor: '#dbeafe',
+                borderBottomColor: '#fed7aa',
                 gap: 6,
               }}
               onPress={applySearch}
             >
-              <Funnel size={14} color="#1e40af" />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e40af' }}>
+              <Funnel size={14} color="#0a2342" />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: '#0a2342' }}>
                 Filtrar mapa por "{search}" ({searchResults.length} resultados)
               </Text>
             </TouchableOpacity>
@@ -365,7 +365,7 @@ export default function MapScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#1e40af',
+              backgroundColor: '#0a2342',
               borderRadius: 20,
               paddingHorizontal: 12,
               paddingVertical: 6,
@@ -387,7 +387,7 @@ export default function MapScreen() {
           position: 'absolute',
           top: insets.top + 8,
           right: 12,
-          backgroundColor: activeFilterCount > 0 ? '#1e40af' : '#fff',
+          backgroundColor: activeFilterCount > 0 ? '#0a2342' : '#fff',
           borderRadius: 12,
           width: 44,
           height: 44,
@@ -401,7 +401,7 @@ export default function MapScreen() {
       >
         <SlidersHorizontal
           size={20}
-          color={activeFilterCount > 0 ? '#fff' : '#1e40af'}
+          color={activeFilterCount > 0 ? '#fff' : '#0a2342'}
         />
         {activeFilterCount > 0 && (
           <View
@@ -417,7 +417,7 @@ export default function MapScreen() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: '800', color: '#1e40af' }}>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: '#0a2342' }}>
               {activeFilterCount}
             </Text>
           </View>
@@ -437,7 +437,7 @@ export default function MapScreen() {
             elevation: 3,
           }}
         >
-          <ActivityIndicator color="#1e40af" />
+          <ActivityIndicator color="#f97316" />
         </View>
       )}
 

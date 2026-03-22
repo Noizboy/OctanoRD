@@ -1,8 +1,6 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
-import { X } from 'phosphor-react-native'
-import { getRatingColor } from '@/lib/constants'
-import RatingStars from '@/components/review/RatingStars'
+import { X, GasPump, Star, PencilSimple, CaretRight } from 'phosphor-react-native'
 import type { GasStation } from '@/lib/queries/types'
 
 interface Props {
@@ -10,73 +8,174 @@ interface Props {
   onClose: () => void
 }
 
+function getRatingColor(r: number) {
+  if (r >= 4) return '#10b981'
+  if (r >= 2.5) return '#f59e0b'
+  return '#ef4444'
+}
+
+function getRatingLabel(r: number, count: number) {
+  if (count === 0) return 'Sin calificaciones'
+  if (r >= 4.5) return 'Excelente'
+  if (r >= 4) return 'Muy bueno'
+  if (r >= 3) return 'Bueno'
+  if (r >= 2) return 'Regular'
+  return 'Malo'
+}
+
 export default function StationCard({ station, onClose }: Props) {
   const router = useRouter()
   const rating = parseFloat(station.avgRating)
-  const ratingColor = getRatingColor(rating)
+  const hasRating = station.reviewCount > 0
+  const ratingColor = hasRating ? getRatingColor(rating) : '#94a3b8'
 
   return (
-    <View className="absolute bottom-6 left-4 right-4 bg-white rounded-2xl shadow-lg p-4">
-      {/* Close button */}
-      <TouchableOpacity
-        className="absolute top-3 right-3 w-8 h-8 items-center justify-center rounded-full bg-gray-100"
-        onPress={onClose}
-      >
-        <X size={18} color="#6b7280" />
-      </TouchableOpacity>
+    <View
+      style={{
+        position: 'absolute',
+        bottom: 16,
+        left: 12,
+        right: 12,
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        overflow: 'hidden',
+        ...(Platform.OS === 'ios'
+          ? { shadowColor: '#0a2342', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 20 }
+          : { elevation: 16 }),
+      }}
+    >
+      {/* Top accent bar */}
+      <View style={{ height: 4, backgroundColor: ratingColor }} />
 
-      <View className="flex-row items-start pr-10">
-        <View className="flex-1">
-          <Text className="text-base font-bold text-gray-900" numberOfLines={1}>
-            {station.name}
-          </Text>
-          {station.brand && (
-            <Text className="text-sm text-blue-700">{station.brand}</Text>
-          )}
-          {station.address && (
-            <Text className="text-xs text-gray-400 mt-0.5" numberOfLines={1}>
-              {station.address}
+      <View style={{ padding: 16 }}>
+        {/* Header row */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          {/* Gas pump icon */}
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: '#f97316' + '18',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12,
+            }}
+          >
+            <GasPump size={22} color="#f97316" weight="fill" />
+          </View>
+
+          {/* Name + brand + address */}
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: '#0f172a', letterSpacing: -0.3 }} numberOfLines={1}>
+              {station.name}
             </Text>
-          )}
+            {station.brand && (
+              <Text style={{ fontSize: 13, fontWeight: '600', color: '#f97316', marginTop: 1 }}>
+                {station.brand}
+              </Text>
+            )}
+            {station.address && (
+              <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }} numberOfLines={1}>
+                {station.address}
+              </Text>
+            )}
+          </View>
+
+          {/* Rating badge */}
+          <View style={{ alignItems: 'center', marginLeft: 12 }}>
+            <View
+              style={{
+                backgroundColor: ratingColor + '18',
+                borderRadius: 12,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 20, fontWeight: '800', color: ratingColor, lineHeight: 24 }}>
+                {hasRating ? rating.toFixed(1) : '--'}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 1 }}>
+                <Star size={9} color={ratingColor} weight="fill" />
+                <Text style={{ fontSize: 9, color: ratingColor, fontWeight: '700' }}>
+                  {station.reviewCount} ops.
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Close */}
+          <TouchableOpacity
+            onPress={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 15,
+              backgroundColor: '#f1f5f9',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 8,
+            }}
+          >
+            <X size={15} color="#64748b" weight="bold" />
+          </TouchableOpacity>
         </View>
 
-        <View className="items-center ml-3">
-          <Text className="text-lg font-bold" style={{ color: ratingColor }}>
-            {station.reviewCount > 0 ? rating.toFixed(1) : '--'}
+        {/* Rating label */}
+        {hasRating && (
+          <Text style={{ fontSize: 11, color: ratingColor, fontWeight: '600', marginTop: 8 }}>
+            {getRatingLabel(rating, station.reviewCount)}
           </Text>
-          <Text className="text-xs text-gray-400">
-            {station.reviewCount} {station.reviewCount === 1 ? 'opinion' : 'opiniones'}
-          </Text>
+        )}
+
+        {/* Divider */}
+        <View style={{ height: 1, backgroundColor: '#f1f5f9', marginVertical: 14 }} />
+
+        {/* Actions */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              height: 46,
+              backgroundColor: '#0a2342',
+              borderRadius: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+            activeOpacity={0.8}
+            onPress={() => {
+              onClose()
+              router.push(`/station/${station.id}`)
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Ver detalles</Text>
+            <CaretRight size={14} color="#fff" weight="bold" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              height: 46,
+              backgroundColor: '#f97316',
+              borderRadius: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+            activeOpacity={0.8}
+            onPress={() => {
+              onClose()
+              router.push(`/review/new?stationId=${station.id}`)
+            }}
+          >
+            <PencilSimple size={15} color="#fff" weight="bold" />
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Calificar</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      {station.reviewCount > 0 && (
-        <View className="mt-2">
-          <RatingStars rating={rating} readonly size={16} />
-        </View>
-      )}
-
-      {/* Actions */}
-      <View className="flex-row gap-3 mt-3">
-        <TouchableOpacity
-          className="flex-1 bg-blue-700 py-2.5 rounded-xl items-center"
-          onPress={() => {
-            onClose()
-            router.push(`/station/${station.id}`)
-          }}
-        >
-          <Text className="text-white font-semibold text-sm">Ver detalles</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="flex-1 border border-blue-700 py-2.5 rounded-xl items-center"
-          onPress={() => {
-            onClose()
-            router.push(`/review/new?stationId=${station.id}`)
-          }}
-        >
-          <Text className="text-blue-700 font-semibold text-sm">Calificar</Text>
-        </TouchableOpacity>
       </View>
     </View>
   )

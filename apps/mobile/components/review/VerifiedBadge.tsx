@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import { Receipt } from 'phosphor-react-native'
+import { CheckCircle } from 'phosphor-react-native'
 
 interface Props {
   style?: object
@@ -12,20 +12,19 @@ export default function VerifiedBadge({ style }: Props) {
         {
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: '#dcfce7',
+          gap: 4,
+          backgroundColor: '#10b98115',
           paddingHorizontal: 8,
           paddingVertical: 3,
-          borderRadius: 12,
+          borderRadius: 20,
           alignSelf: 'flex-start',
         },
         style,
       ]}
     >
-      <Receipt size={12} color="#16a34a" weight="fill" />
-      <Text
-        style={{ color: '#16a34a', fontSize: 11, fontWeight: '600', marginLeft: 4 }}
-      >
-        Factura verificada
+      <CheckCircle size={11} color="#10b981" weight="fill" />
+      <Text style={{ fontSize: 11, fontWeight: '700', color: '#10b981' }}>
+        Verificada
       </Text>
     </View>
   )

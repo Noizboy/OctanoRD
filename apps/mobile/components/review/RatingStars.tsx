@@ -8,35 +8,26 @@ interface Props {
   onRate?: (stars: number) => void
 }
 
-export default function RatingStars({
-  rating,
-  readonly = true,
-  size = 24,
-  onRate,
-}: Props) {
-  const stars = [1, 2, 3, 4, 5]
-
+export default function RatingStars({ rating, readonly = true, size = 24, onRate }: Props) {
   return (
-    <View style={{ flexDirection: 'row', gap: 2 }}>
-      {stars.map((star) => {
+    <View style={{ flexDirection: 'row', gap: 3 }}>
+      {[1, 2, 3, 4, 5].map((star) => {
         const filled = star <= Math.round(rating)
-        const color = filled ? '#eab308' : '#d1d5db'
+        const color = filled ? '#f59e0b' : '#e2e8f0'
 
         if (readonly) {
-          return (
-            <Star key={star} size={size} color={color} weight={filled ? 'fill' : 'regular'} />
-          )
+          return <Star key={star} size={size} color={color} weight={filled ? 'fill' : 'regular'} />
         }
 
         return (
           <TouchableOpacity
             key={star}
             onPress={() => onRate?.(star)}
-            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+            hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
           >
             <Star
               size={size}
-              color={star <= rating ? '#eab308' : '#d1d5db'}
+              color={star <= rating ? '#f59e0b' : '#e2e8f0'}
               weight={star <= rating ? 'fill' : 'regular'}
             />
           </TouchableOpacity>

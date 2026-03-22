@@ -18,17 +18,17 @@ export default function MyReviewsScreen() {
 
   if (!deviceHash) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#1e40af" />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9' }}>
+        <ActivityIndicator size="large" color="#f97316" />
       </View>
     )
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1e40af" />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color="#f97316" />
         </View>
       ) : (
         <FlatList
@@ -37,23 +37,25 @@ export default function MyReviewsScreen() {
           renderItem={({ item }) => <ReviewCard review={item} />}
           ListHeaderComponent={
             reviews.length > 0 ? (
-              <Text className="px-4 py-3 text-sm text-gray-500">
+              <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                 {reviews.length} {reviews.length === 1 ? 'calificacion' : 'calificaciones'}
               </Text>
             ) : null
           }
           ListEmptyComponent={
-            <View className="items-center py-20 px-6">
-              <Star size={56} color="#9ca3af" />
-              <Text className="text-lg font-semibold text-gray-700 mt-4 text-center">
-                Aun no has calificado ninguna gasolinera
+            <View style={{ alignItems: 'center', paddingVertical: 80, paddingHorizontal: 32 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 28, backgroundColor: '#f97316' + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Star size={40} color="#f97316" weight="fill" />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', textAlign: 'center' }}>
+                Aún no has calificado ninguna gasolinera
               </Text>
-              <Text className="text-sm text-gray-400 text-center mt-2">
-                Tus calificaciones apareceran aqui
+              <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
+                Tus calificaciones aparecerán aquí para que puedas llevar un historial
               </Text>
             </View>
           }
-          contentContainerStyle={{ paddingBottom: 16 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
         />
       )}
     </View>
