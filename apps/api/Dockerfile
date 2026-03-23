@@ -2,10 +2,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json ./
+COPY apps/api/package.json ./
 RUN npm install --legacy-peer-deps
 
-COPY . .
+COPY apps/api/ .
 RUN npm run build
 
 EXPOSE 3000
