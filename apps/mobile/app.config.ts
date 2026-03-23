@@ -3,7 +3,7 @@ import type { ConfigContext, ExpoConfig } from 'expo/config'
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'OctanoRD',
-  slug: 'octanord',
+  slug: 'octanerd',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -38,7 +38,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#1e40af',
     },
-    package: 'com.octanord.app',
+    config: {
+      googleMaps: {
+        apiKey: 'AIzaSyBwYWKddmUNWltNwghk20ScvpwY5q_Lxnk',
+      },
+    },
+    package: 'com.octanerd.app',
     versionCode: 1,
     usesCleartextTraffic: true,
     permissions: [
@@ -82,5 +87,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000',
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? 'http://localhost:3000',
+    eas: {
+      projectId: 'db944dd4-9f5d-4c45-adb8-6484bf08c798',
+    },
   },
 })
