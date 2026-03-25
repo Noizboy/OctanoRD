@@ -37,7 +37,11 @@ import { AppController } from './app.controller'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        createClient: () => new Redis(config.get<string>('redis.url') ?? 'redis://localhost:6379'),
+        createClient: (type: string) => {
+          const url = config.get<string>('redis.url') ?? 'redis://localhost:6379'
+          if (type === 'client') return new Redis(url)
+          return new Redis(url, { enableReadyCheck: false, maxRetriesPerRequest: null })
+        },
       }),
     }),
 
