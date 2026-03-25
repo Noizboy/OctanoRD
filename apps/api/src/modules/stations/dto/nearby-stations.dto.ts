@@ -14,7 +14,7 @@ export class NearbyStationsDto {
   @IsNumber()
   @IsOptional()
   @Min(0.5)
-  @Max(50)
+  @Max(50000)
   radius?: number
 
   @Type(() => Number)
