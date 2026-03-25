@@ -1,6 +1,5 @@
 import { View, Text } from 'react-native'
 import { Marker } from 'react-native-maps'
-import { useState } from 'react'
 import type { GasStation } from '@/lib/queries/types'
 
 interface Props {
@@ -16,10 +15,10 @@ function getPinColor(rating: number, hasRating: boolean) {
 }
 
 export default function StationMarker({ station, onPress }: Props) {
-  const [tracked, setTracked] = useState(true)
   const rating = parseFloat(station.avgRating ?? '0')
   const hasRating = station.reviewCount > 0
   const pinColor = getPinColor(rating, hasRating)
+  const label = hasRating ? rating.toFixed(1) : '--'
 
   return (
     <Marker
@@ -28,31 +27,36 @@ export default function StationMarker({ station, onPress }: Props) {
         longitude: parseFloat(station.lng),
       }}
       onPress={onPress}
-      tracksViewChanges={tracked}
+      tracksViewChanges={false}
+      anchor={{ x: 0.5, y: 1 }}
     >
-      <View
-        style={{ alignItems: 'center' }}
-        onLayout={() => setTracked(false)}
-      >
+      <View collapsable={false} style={{ alignItems: 'center' }}>
         <View
+          collapsable={false}
           style={{
             backgroundColor: pinColor,
             borderRadius: 8,
             borderWidth: 2,
-            borderColor: '#ffffff',
-            paddingHorizontal: 7,
-            paddingVertical: 4,
-            flexDirection: 'row',
+            borderColor: '#fff',
+            paddingHorizontal: 8,
+            paddingVertical: 3,
             alignItems: 'center',
-            elevation: 6,
+            elevation: 4,
           }}
         >
-          <Text style={{ color: '#facc15', fontSize: 10, marginRight: 2 }}>★</Text>
-          <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: 'bold' }}>
-            {hasRating ? rating.toFixed(1) : '--'}
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 11,
+              fontWeight: 'bold',
+              includeFontPadding: false,
+            }}
+          >
+            {'★ ' + label}
           </Text>
         </View>
         <View
+          collapsable={false}
           style={{
             width: 0,
             height: 0,
