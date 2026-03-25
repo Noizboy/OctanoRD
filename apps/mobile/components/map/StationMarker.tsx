@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native'
 import { Marker } from 'react-native-maps'
+import { useState } from 'react'
 import type { GasStation } from '@/lib/queries/types'
 
 interface Props {
@@ -15,9 +16,11 @@ function getPinColor(rating: number, hasRating: boolean) {
 }
 
 export default function StationMarker({ station, onPress }: Props) {
+  const [ready, setReady] = useState(false)
   const rating = parseFloat(station.avgRating)
   const hasRating = station.reviewCount > 0
   const pinColor = getPinColor(rating, hasRating)
+  const label = hasRating ? rating.toFixed(1) : '-'
 
   return (
     <Marker
@@ -26,32 +29,36 @@ export default function StationMarker({ station, onPress }: Props) {
         longitude: parseFloat(station.lng),
       }}
       onPress={onPress}
-      tracksViewChanges={false}
+      tracksViewChanges={!ready}
     >
-      <View style={{ alignItems: 'center' }}>
+      <View
+        style={{ alignItems: 'center', width: 56 }}
+        onLayout={() => setReady(true)}
+      >
         <View
           style={{
             backgroundColor: pinColor,
-            borderRadius: 12,
-            paddingHorizontal: 8,
-            paddingVertical: 5,
+            borderRadius: 10,
             borderWidth: 2,
-            borderColor: '#fff',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            elevation: 6,
+            borderColor: '#ffffff',
+            paddingHorizontal: 6,
+            paddingVertical: 4,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 3,
-            minWidth: 44,
             justifyContent: 'center',
+            width: 52,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.4,
+            shadowRadius: 3,
+            elevation: 8,
           }}
         >
-          <Text style={{ color: '#fff', fontSize: 11, lineHeight: 13 }}>★</Text>
-          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', lineHeight: 14 }}>
-            {hasRating ? rating.toFixed(1) : '—'}
+          <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold', marginRight: 2 }}>
+            {'★'}
+          </Text>
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '900' }}>
+            {label}
           </Text>
         </View>
         <View
