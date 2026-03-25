@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native'
 import { Marker } from 'react-native-maps'
+import { useState, useEffect } from 'react'
 import type { GasStation } from '@/lib/queries/types'
 
 interface Props {
@@ -14,11 +15,22 @@ function getPinColor(rating: number, hasRating: boolean) {
   return '#ef4444'
 }
 
+const W = 58
+const H = 30
+const TAIL = 8
+
 export default function StationMarker({ station, onPress }: Props) {
+  const [tracksViewChanges, setTracksViewChanges] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setTracksViewChanges(false), 300)
+    return () => clearTimeout(t)
+  }, [])
+
   const rating = parseFloat(station.avgRating ?? '0')
   const hasRating = station.reviewCount > 0
-  const pinColor = getPinColor(rating, hasRating)
-  const label = hasRating ? rating.toFixed(1) : '--'
+  const color = getPinColor(rating, hasRating)
+  const label = hasRating ? `★ ${rating.toFixed(1)}` : '★ --'
 
   return (
     <Marker
@@ -27,32 +39,37 @@ export default function StationMarker({ station, onPress }: Props) {
         longitude: parseFloat(station.lng),
       }}
       onPress={onPress}
-      tracksViewChanges={false}
+      tracksViewChanges={tracksViewChanges}
       anchor={{ x: 0.5, y: 1 }}
     >
-      <View collapsable={false} style={{ alignItems: 'center' }}>
+      <View
+        collapsable={false}
+        style={{ width: W, height: H + TAIL, alignItems: 'center' }}
+      >
         <View
           collapsable={false}
           style={{
-            backgroundColor: pinColor,
+            width: W,
+            height: H,
+            backgroundColor: color,
             borderRadius: 8,
             borderWidth: 2,
-            borderColor: '#fff',
-            paddingHorizontal: 8,
-            paddingVertical: 3,
+            borderColor: '#ffffff',
             alignItems: 'center',
-            elevation: 4,
+            justifyContent: 'center',
+            elevation: 5,
           }}
         >
           <Text
             style={{
-              color: '#fff',
-              fontSize: 11,
+              color: '#ffffff',
+              fontSize: 12,
               fontWeight: 'bold',
               includeFontPadding: false,
+              textAlignVertical: 'center',
             }}
           >
-            {'★ ' + label}
+            {label}
           </Text>
         </View>
         <View
@@ -60,12 +77,12 @@ export default function StationMarker({ station, onPress }: Props) {
           style={{
             width: 0,
             height: 0,
-            borderLeftWidth: 5,
-            borderRightWidth: 5,
-            borderTopWidth: 6,
+            borderLeftWidth: 6,
+            borderRightWidth: 6,
+            borderTopWidth: TAIL,
             borderLeftColor: 'transparent',
             borderRightColor: 'transparent',
-            borderTopColor: pinColor,
+            borderTopColor: color,
           }}
         />
       </View>
