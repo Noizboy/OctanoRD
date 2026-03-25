@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { BullModule } from '@nestjs/bull'
+import Redis from 'ioredis'
 import configuration from './config/configuration'
 import { DbModule } from './db/db.module'
 import { AuthModule } from './modules/auth/auth.module'
@@ -35,16 +36,9 @@ import { AppController } from './app.controller'
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const redisUrl = new URL(config.get<string>('redis.url') ?? 'redis://localhost:6379')
-        return {
-          redis: {
-            host: redisUrl.hostname,
-            port: parseInt(redisUrl.port || '6379', 10),
-            password: redisUrl.password || undefined,
-          },
-        }
-      },
+      useFactory: (config: ConfigService) => ({
+        createClient: () => new Redis(config.get<string>('redis.url') ?? 'redis://localhost:6379'),
+      }),
     }),
 
     DbModule,
