@@ -17,22 +17,23 @@ export class StationsService {
     const { lat, lng, radius = 10, minRating, brand } = dto
     const radiusMeters = radius * 1000
 
-    // ST_DWithin with geography type for accurate distance in meters
+    // Haversine formula — no PostGIS required
     const results = await this.db.execute(sql`
       SELECT
         gs.*,
-        ST_Distance(
-          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
-          geom::geography
-        ) AS distance_meters
+        (6371000 * acos(
+          cos(radians(${lat})) * cos(radians(gs.lat::float)) *
+          cos(radians(gs.lng::float) - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians(gs.lat::float))
+        )) AS distance_meters
       FROM gas_stations gs
       WHERE
-        geom IS NOT NULL
-        AND ST_DWithin(
-          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
-          geom::geography,
-          ${radiusMeters}
-        )
+        gs.lat IS NOT NULL AND gs.lng IS NOT NULL
+        AND (6371000 * acos(
+          cos(radians(${lat})) * cos(radians(gs.lat::float)) *
+          cos(radians(gs.lng::float) - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians(gs.lat::float))
+        )) <= ${radiusMeters}
         ${minRating != null ? sql`AND gs.avg_rating::numeric >= ${minRating}` : sql``}
         ${brand ? sql`AND gs.brand ILIKE ${`%${brand}%`}` : sql``}
       ORDER BY distance_meters ASC
@@ -49,7 +50,6 @@ export class StationsService {
         phone, hours, services, fuel_types, avg_rating, review_count,
         verified, claimed, osm_id, created_at, updated_at
       FROM gas_stations
-      WHERE geom IS NOT NULL
       ORDER BY name ASC
     `)
     return results
